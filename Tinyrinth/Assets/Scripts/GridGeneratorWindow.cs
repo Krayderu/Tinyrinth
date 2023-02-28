@@ -31,11 +31,11 @@ public class GridGeneratorWindow : EditorWindow
 
         if (GUILayout.Button("Generate Grid"))
         {
-            GenerateGrid();
+            GenerateGridWindow();
         }
     }
 
-    void GenerateGrid()
+    void GenerateGridWindow()
     {
         GameObject gridObject = new GameObject("Grid");
         gridObject.AddComponent<CustomGrid>();

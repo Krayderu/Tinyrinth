@@ -32,36 +32,45 @@ public class GridGenerator : MonoBehaviour
         }
 
         CustomGrid customGridObject = gridObject.GetComponent<CustomGrid>();
-
-
-        // Supprimer les anciens prefabs instanciés
-        foreach (PassageTile prefab in instantiatedPrefabs)
+        if (customGridObject != null)
         {
-            DestroyImmediate(prefab);
-        }
-        instantiatedPrefabs.Clear();
 
-        // Parcourir toutes les cellules de la grille
-        foreach (Transform cellTransform in gridObject.transform)
-        {
-            int row, column;
-            if (ParseCellName(cellTransform.name, out row, out column))
+
+            // Supprimer les anciens prefabs instanciés
+            foreach (PassageTile prefab in instantiatedPrefabs)
             {
-                // Vérifier si la cellule est intérieure à la grille
-                if (row > 0 && row < 8 && column > 0 && column < 8)
-                {
-                    // Assigner un prefab aléatoire à la cellule
-                    PassageTile prefab = prefabs[Random.Range(0, prefabs.Length)];
-                    PassageTile instance = Instantiate(prefab, cellTransform.position, Quaternion.identity);
-                    instance.transform.rotation = Quaternion.Euler(0, Random.Range(0, 4) * 90, 0); // Rotation aléatoire en incrément de 90 degrés
-                    instantiatedPrefabs.Add(instance);
+                DestroyImmediate(prefab);
+            }
+            instantiatedPrefabs.Clear();
 
-                    customGridObject.cells[row,column] = instance;
+            // Parcourir toutes les cellules de la grille
+            foreach (Transform cellTransform in gridObject.transform)
+            {
+                int row, column;
+                if (ParseCellName(cellTransform.name, out row, out column))
+                {
+                    // Vérifier si la cellule est intérieure à la grille
+                    if (row > 0 && row < 8 && column > 0 && column < 8)
+                    {
+                        // Assigner un prefab aléatoire à la cellule
+                        PassageTile prefab = prefabs[Random.Range(0, prefabs.Length)];
+                        PassageTile instance = Instantiate(prefab, cellTransform.position, Quaternion.identity);
+                        instance.transform.rotation = Quaternion.Euler(0, Random.Range(0, 4) * 90, 0); // Rotation aléatoire en incrément de 90 degrés
+                        int currentRotation = (int)instance.transform.rotation.y / 90; 
+                        instance.rotation = currentRotation + 1;
+                        instantiatedPrefabs.Add(instance);
+
+                        customGridObject.cells[row, column] = instance;
+                    }
                 }
             }
-        }
 
-        Debug.Log(customGridObject.cells);
+            Debug.Log(customGridObject.cells.Length) ;
+        }
+        else
+        {
+            Debug.LogError("Le composant CustomGrid n'a pas été trouvé sur l'objet Grid.");
+        }
     }
 
     bool ParseCellName(string name, out int row, out int column)

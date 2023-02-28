@@ -5,4 +5,5 @@ using UnityEngine;
 public class PassageTile : MonoBehaviour
 {
     public List<bool> sockets = new List<bool>(4);
+    public int rotation;
 }
