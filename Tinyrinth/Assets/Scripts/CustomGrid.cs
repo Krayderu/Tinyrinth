@@ -5,8 +5,26 @@ using UnityEngine;
 public class CustomGrid : MonoBehaviour
 {
     public PassageTile[,] cells; //An array of the coordinates of cells in the CustomGrid
+
+    public Vector3 GetMouseWorldPosition()
+    {
+        // Get the position on the tilemap that the mouse is pointing to
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(Camera.main.transform.forward, transform.position);
+        if (plane.Raycast(ray, out float distance))
+        {
+            Vector3 hitPoint = ray.GetPoint(distance);
+            return hitPoint;
+        }
+        else
+        {
+            return Vector3.zero;
+        }
+    }
+
     public PassageTile getTile(int x,int y)
     {
+        //x = row y = column
         if (cells[x, y] is PassageTile)
         {
             return cells[x,y];
@@ -14,6 +32,31 @@ public class CustomGrid : MonoBehaviour
         else
         {
             return null;
+        }
+    }
+
+    public bool Isplaceable(Vector3Int position, PassageTile data)
+    {
+        int x = position.x;
+        int y = position.z;
+
+        // Check if the tile is on the border of the grid but not on a corner
+        if (!((x == 0 && y > 0 && y < cells.GetLength(1) - 1) || // Left border
+              (x == cells.GetLength(0) - 1 && y > 0 && y < cells.GetLength(1) - 1) || // Right border
+              (y == 0 && x > 0 && x < cells.GetLength(0) - 1) || // Bottom border
+              (y == cells.GetLength(1) - 1 && x > 0 && x < cells.GetLength(0) - 1))) // Top border
+        {
+            return false;
+        }
+
+        // Check if the tile overlaps with any other tiles
+        if (getTile(x, y) != null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
         }
     }
 
@@ -65,5 +108,7 @@ public class CustomGrid : MonoBehaviour
 
         return true;
     }
+
+
 }
 
