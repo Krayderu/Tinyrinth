@@ -8,9 +8,20 @@ using UnityEditor;
 
 public class GridGenerator : MonoBehaviour
 {
-    public GameObject[] prefabs; // Liste de prefabs à assigner aléatoirement aux cellules
+    public PassageTile[] prefabs; // Liste de prefabs à assigner aléatoirement aux cellules
+    private List<PassageTile> instantiatedPrefabs = new List<PassageTile>(); // Liste des prefabs instanciés
 
     void Start()
+    {
+        GenerateGrid();
+    }
+
+    public void InitializeGrid()
+    {
+        Start();
+    }
+
+    void GenerateGrid()
     {
         // Trouver la grille
         GameObject gridObject = GameObject.Find("Grid");
@@ -19,6 +30,16 @@ public class GridGenerator : MonoBehaviour
             Debug.LogError("La grille n'a pas été trouvée.");
             return;
         }
+
+        CustomGrid customGridObject = gridObject.GetComponent<CustomGrid>();
+
+
+        // Supprimer les anciens prefabs instanciés
+        foreach (PassageTile prefab in instantiatedPrefabs)
+        {
+            DestroyImmediate(prefab);
+        }
+        instantiatedPrefabs.Clear();
 
         // Parcourir toutes les cellules de la grille
         foreach (Transform cellTransform in gridObject.transform)
@@ -30,18 +51,17 @@ public class GridGenerator : MonoBehaviour
                 if (row > 0 && row < 8 && column > 0 && column < 8)
                 {
                     // Assigner un prefab aléatoire à la cellule
-                    GameObject prefab = prefabs[Random.Range(0, prefabs.Length)];
-                    GameObject instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
-                    instance.transform.SetParent(cellTransform);
-                    instance.transform.localPosition = Vector3.zero;
+                    PassageTile prefab = prefabs[Random.Range(0, prefabs.Length)];
+                    PassageTile instance = Instantiate(prefab, cellTransform.position, Quaternion.identity);
+                    instance.transform.rotation = Quaternion.Euler(0, Random.Range(0, 4) * 90, 0); // Rotation aléatoire en incrément de 90 degrés
+                    instantiatedPrefabs.Add(instance);
+
+                    customGridObject.cells[row,column] = instance;
                 }
             }
         }
-    }
 
-    public void InitializeGrid()
-    {
-        Start();
+        Debug.Log(customGridObject.cells);
     }
 
     bool ParseCellName(string name, out int row, out int column)
@@ -79,4 +99,3 @@ public class GridGeneratorEditor : Editor
     }
 }
 #endif
-

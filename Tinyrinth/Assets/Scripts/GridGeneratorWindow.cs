@@ -38,6 +38,8 @@ public class GridGeneratorWindow : EditorWindow
     void GenerateGrid()
     {
         GameObject gridObject = new GameObject("Grid");
+        gridObject.AddComponent<CustomGrid>();
+        gridObject.GetComponent<CustomGrid>().cells = new PassageTile[rows, columns];
         Undo.RegisterCreatedObjectUndo(gridObject, "Created Grid");
 
         Vector3 startPosition = Vector3.zero;

@@ -109,7 +109,7 @@ public class NewGridGenerator : MonoBehaviour
 //            return false;
 //        }
 //    }
-//}
+}
 
 //#if UNITY_EDITOR
 //[CustomEditor(typeof(GridGenerator))]
@@ -128,7 +128,5 @@ public class NewGridGenerator : MonoBehaviour
 //            EditorUtility.SetDirty(gridGenerator);
 //        }
 //    }
-}
+//}
 //#endif
-
-
