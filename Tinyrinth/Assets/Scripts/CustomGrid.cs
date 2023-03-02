@@ -35,7 +35,7 @@ public class CustomGrid : MonoBehaviour
         }
     }
 
-    public bool Isplaceable(Vector3Int position, PassageTile data)
+    public bool IsPlaceable(Vector3Int position, PassageTile data)
     {
         int x = position.x;
         int y = position.z;
@@ -107,6 +107,56 @@ public class CustomGrid : MonoBehaviour
         if (!canConnect) return false;
 
         return true;
+    }
+
+    public Vector3Int GetGridCellPosition(Vector3 position)
+    {
+        float gridSize = 1f;
+        int x = Mathf.RoundToInt(position.x / gridSize);
+        int y = Mathf.RoundToInt(position.z / gridSize);
+
+        // Get the closest cell position on the grid
+        Vector3Int cellPos = new Vector3Int(x, 0, y);
+
+        return cellPos;
+    }
+    public Vector3 GetSnappedPosition(Vector3 position)
+    {
+        Vector3 snappedPosition = SnapToGrid(position);
+        return snappedPosition;
+    }
+
+
+    public Vector3 SnapToGrid(Vector3 position)
+    {
+        float gridSize = 1f;
+        int x = Mathf.RoundToInt(position.x / gridSize);
+        int y = Mathf.RoundToInt(position.z / gridSize);
+
+        // Get the closest cell position on the grid
+        Vector3Int cellPos = new Vector3Int(x, 0, y);
+
+        // Get the world position of the center of the closest cell on the grid
+        Vector3 gridPos = cells[cellPos.x, cellPos.z].transform.position;
+
+        // Adjust the y-coordinate of the snapped position to match the original position
+        gridPos.y = position.y;
+
+        return gridPos;
+    }
+
+    void OnMouseUp()
+    {
+        Vector3Int proposedPos = GetGridCellPosition(GetMouseWorldPosition());
+        PassageTile proposedTile = GetComponent<GridGenerator>().prefabs[Random.Range(0, GetComponent<GridGenerator>().prefabs.Length)];
+
+        if (IsPlaceable(proposedPos, proposedTile))
+        {
+            // Tile is placeable, snap to grid and set cell data
+            Vector3 snappedPos = GetSnappedPosition(proposedPos);
+            cells[proposedPos.x, proposedPos.z] = proposedTile;
+            Instantiate(proposedTile, snappedPos, Quaternion.identity);
+        }
     }
 
 
