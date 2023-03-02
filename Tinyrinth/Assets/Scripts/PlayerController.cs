@@ -18,7 +18,6 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         GetMouseWorldPosition();
-        Debug.Log(GetMouseWorldPosition());
         //Player Movement
         if (Input.GetKey(KeyCode.W))
         {
