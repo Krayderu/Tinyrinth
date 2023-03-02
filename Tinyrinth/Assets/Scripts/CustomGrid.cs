@@ -164,9 +164,9 @@ public class CustomGrid : MonoBehaviour
         Down
     }
 
-    public void ShiftRow(int rowIndex, PassageTile replaceValue, Direction direction)
+    public PassageTile ShiftRow(int rowIndex, PassageTile replaceValue, Direction direction)
     {
-        PassageTile lastValue = cells[rowIndex, cells.GetLength(1) - 1];
+        PassageTile lastValue = cells[rowIndex, direction == Direction.Left ? 0 : cells.GetLength(1) - 1];
 
         if (direction == Direction.Left)
         {
@@ -184,11 +184,12 @@ public class CustomGrid : MonoBehaviour
             }
             cells[rowIndex, cells.GetLength(1) - 1] = replaceValue;
         }
+        return lastValue;
     }
 
-    public void ShiftColumn(int columnIndex, PassageTile replaceValue, Direction direction)
+    public PassageTile ShiftColumn(int columnIndex, PassageTile replaceValue, Direction direction)
     {
-        PassageTile lastValue = cells[cells.GetLength(0) - 1, columnIndex];
+        PassageTile lastValue = cells[direction == Direction.Up ? 0 : cells.GetLength(0) - 1, columnIndex];
 
         if (direction == Direction.Up)
         {
@@ -206,6 +207,7 @@ public class CustomGrid : MonoBehaviour
             }
             cells[cells.GetLength(0) - 1, columnIndex] = replaceValue;
         }
+        return lastValue;
     }
     #endregion
 }
