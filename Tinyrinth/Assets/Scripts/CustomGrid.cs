@@ -6,10 +6,14 @@ public class CustomGrid : MonoBehaviour
 {
 
     public PassageTile[,] cells;
+    private float cellSpacing = 0f;
+    private float cellSize = 0f;
 
-    public void InitializeGridData(int rows, int columns)
+    public void InitializeGridData(int rows, int columns, float size, float spacing)
     {
         cells = new PassageTile[rows, columns];
+        cellSize = size;
+        cellSpacing = spacing;
     }
     public PassageTile getTile(int x,int y)
     {
@@ -114,11 +118,6 @@ public class CustomGrid : MonoBehaviour
 
         return cellPos;
     }
-    public Vector3 GetSnappedPosition(Vector3 position)
-    {
-        Vector3 snappedPosition = SnapToGrid(position);
-        return snappedPosition;
-    }
 
 
     public Vector3 SnapToGrid(Vector3 position)
@@ -131,7 +130,10 @@ public class CustomGrid : MonoBehaviour
         Vector3Int cellPos = new Vector3Int(x, 0, y);
 
         // Get the world position of the center of the closest cell on the grid
-        Vector3 gridPos = cells[cellPos.x, cellPos.z].transform.position;
+        //Vector3 gridPos = cells[cellPos.x, cellPos.z].transform.position;
+        float gridX = x * (cellSize + cellSpacing);
+        float gridY = y * (cellSize + cellSpacing);
+        Vector3 gridPos = new Vector3(gridX, 0, gridY);
 
         // Adjust the y-coordinate of the snapped position to match the original position
         gridPos.y = position.y;
@@ -146,6 +148,12 @@ public class CustomGrid : MonoBehaviour
         Right,
         Up,
         Down
+    }
+
+    public ShiftRowForReal(int rowIndex, PassageTile replaceValue, Direction direction){
+        var outTile = ShiftRow(rowIndex, replaceValue, direction);
+        // move the tiles
+        // move the player
     }
 
     public PassageTile ShiftRow(int rowIndex, PassageTile replaceValue, Direction direction)

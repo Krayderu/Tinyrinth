@@ -6,22 +6,45 @@ public class PlayerController : MonoBehaviour
 {
     private PassageTile currentTile;
     private PassageTile startingTile;
+    private CustomGrid grid;
+    private PassageTile[] prefabs;
+    private PassageTile currentPrefab;
+    public Vector2 gridPos = new Vector2(0,0);
 
     private void Start()
     {
         //Setting the playerPos in the Grid
-        CustomGrid findGrid = FindObjectOfType<CustomGrid>();
-        CustomGrid grid = findGrid.GetComponent<CustomGrid>();
+        grid = FindObjectOfType<CustomGrid>();
+        //grid = findGrid.GetComponent<CustomGrid>();
         PassageTile startingTile = grid.cells[0,0];
         currentTile = startingTile;
+        GridGenerator generator = FindObjectOfType<GridGenerator>();
+        prefabs = generator.prefabs;
+        var chosenPrefab = pickPrefab();
+        Debug.Log(chosenPrefab);
+        currentPrefab = Instantiate(chosenPrefab);
     }
     private void Update()
     {
-        GetMouseWorldPosition();
+        var mousePos = GetMouseWorldPosition();
+        currentPrefab.transform.position = grid.SnapToGrid(mousePos);
+        
         //Player Movement
         if (Input.GetKey(KeyCode.W))
         {
 
+        }
+
+        if (Input.GetKey(KeyCode.R)){
+            // rotation asjadj euler machin
+            currentPrefab.rotation = (currentPrefab.rotation + 1) % 4;
+        }
+
+        if (Input.GetMouseButtonDown(0)){
+            Vector3 click = mousePos;
+            Debug.Log(grid.SnapToGrid(click));
+            // 1. trouver quelle colonne / ligne
+            // 2. shift colonne/ligne
         }
 
     }
@@ -30,7 +53,7 @@ public class PlayerController : MonoBehaviour
     {
         // Get the position on the tilemap that the mouse is pointing to
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Plane plane = new Plane(Camera.main.transform.forward, transform.position);
+        Plane plane = new Plane(new Vector3(0,1,0), new Vector3(0,0,0));
         if (plane.Raycast(ray, out float distance))
         {
             Vector3 hitPoint = ray.GetPoint(distance);
@@ -42,29 +65,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void OnMouseUp()
-    {
-        Vector3 click = GetMouseWorldPosition();
-        Debug.Log(click);
-        //CustomGrid findGrid = FindObjectOfType<CustomGrid>();
-        //CustomGrid grid = findGrid.GetComponent<CustomGrid>();
-
-        //Vector3 mousePos = Input.mousePosition;
-        //mousePos.z = Camera.main.nearClipPlane; // Set the z-coordinate to the near clip plane distance
-        //Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
-
-        //Vector3Int proposedPos = grid.GetGridCellPosition(worldPos);
-        //PassageTile proposedTile = GetComponent<GridGenerator>().prefabs[Random.Range(0, GetComponent<GridGenerator>().prefabs.Length)];
-
-        //Debug.Log(proposedPos);
-
-        //if (grid.IsPlaceable(proposedPos, proposedTile))
-        //{
-        //    Debug.Log("une tile est placeable à " + proposedPos);
-        //    // Tile is placeable, snap to grid and set cell data
-        //    Vector3 snappedPos = grid.GetSnappedPosition(proposedPos);
-        //    grid.cells[proposedPos.x, proposedPos.z] = proposedTile;
-        //    Instantiate(proposedTile, snappedPos, Quaternion.identity);
-        //}
+    private PassageTile pickPrefab(){
+        return prefabs[Random.Range(0, prefabs.Length-1)];
     }
 }

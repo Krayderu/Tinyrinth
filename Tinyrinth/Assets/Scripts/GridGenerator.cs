@@ -48,22 +48,17 @@ public class GridGenerator : MonoBehaviour
     // Addition de prefabs sur la grille + data
 
 
-    public PassageTile[] prefabs; // Liste de prefabs à assigner aléatoirement aux cellules
-    private List<PassageTile> instantiatedPrefabs = new List<PassageTile>(); // Liste des prefabs instanciés
+    public PassageTile[] prefabs; // Liste de prefabs ï¿½ assigner alï¿½atoirement aux cellules
+    private List<PassageTile> instantiatedPrefabs = new List<PassageTile>(); // Liste des prefabs instanciï¿½s
 
-    void Start()
+    void Awake()
     {
         GenerateGridWindow();
 
-        Debug.Log("grilleGénerée");
         GenerateGrid();
-        Debug.Log("la grille contient " + rows * columns + " cases");
+        //Debug.Log("la grille contient " + rows * columns + " cases");
     }
 
-    public void InitializeGrid()
-    {
-        Start();
-    }
 
     void GenerateGrid()
     {
@@ -71,7 +66,7 @@ public class GridGenerator : MonoBehaviour
         GameObject gridObject = GameObject.Find("Grid");
         if (gridObject == null)
         {
-            Debug.LogError("La grille n'a pas été trouvée.");
+            Debug.LogError("La grille n'a pas ï¿½tï¿½ trouvï¿½e.");
             return;
         }
 
@@ -79,9 +74,9 @@ public class GridGenerator : MonoBehaviour
 
         if (customGridObject != null)
         {
-            customGridObject.InitializeGridData(rows, columns);
+            customGridObject.InitializeGridData(rows, columns, cellSize, cellSpacing);
 
-            // Supprimer les anciens prefabs instanciés
+            // Supprimer les anciens prefabs instanciï¿½s
             foreach (PassageTile prefab in instantiatedPrefabs)
             {
                 DestroyImmediate(prefab);
@@ -94,14 +89,14 @@ public class GridGenerator : MonoBehaviour
                 int row, column;
                 if (ParseCellName(cellTransform.name, out row, out column))
                 {
-                    //// Vérifier si la cellule est intérieure à la grille
+                    //// Vï¿½rifier si la cellule est intï¿½rieure ï¿½ la grille
                     //if (row > 0 && row < rows && column > 0 && column < columns)
                     //{
-                        // Assigner un prefab aléatoire à la cellule
+                        // Assigner un prefab alï¿½atoire ï¿½ la cellule
                         PassageTile prefab = prefabs[Random.Range(0, prefabs.Length)];
                         PassageTile instance = Instantiate(prefab, cellTransform.position, Quaternion.identity);
-                        instance.transform.rotation = Quaternion.Euler(0, Random.Range(0, 4) * 90, 0); // Rotation aléatoire en incrément de 90 degrés
-                        int currentRotation = (int)instance.transform.rotation.y / 90; 
+                        instance.transform.rotation = Quaternion.Euler(0, Random.Range(0, 4) * 90, 0); // Rotation alï¿½atoire en incrï¿½ment de 90 degrï¿½s
+                        int currentRotation = (int)instance.transform.rotation.y / 90;
                         instance.rotation = currentRotation + 1;
                         instantiatedPrefabs.Add(instance);
 
@@ -114,7 +109,7 @@ public class GridGenerator : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Le composant CustomGrid n'a pas été trouvé sur l'objet Grid.");
+            Debug.LogError("Le composant CustomGrid n'a pas ï¿½tï¿½ trouvï¿½ sur l'objet Grid.");
         }
     }
 
@@ -134,22 +129,22 @@ public class GridGenerator : MonoBehaviour
     }
 }
 
-#if UNITY_EDITOR
-[CustomEditor(typeof(GridGenerator))]
-public class GridGeneratorEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        DrawDefaultInspector();
+// #if UNITY_EDITOR
+// [CustomEditor(typeof(GridGenerator))]
+// public class GridGeneratorEditor : Editor
+// {
+//     public override void OnInspectorGUI()
+//     {
+//         DrawDefaultInspector();
 
-        GridGenerator gridGenerator = (GridGenerator)target;
+//         GridGenerator gridGenerator = (GridGenerator)target;
 
-        // Bouton pour assigner des prefabs aléatoires
-        if (GUILayout.Button("Assign Random Prefabs"))
-        {
-            gridGenerator.InitializeGrid();
-            EditorUtility.SetDirty(gridGenerator);
-        }
-    }
-}
-#endif
+//         // Bouton pour assigner des prefabs alï¿½atoires
+//         if (GUILayout.Button("Assign Random Prefabs"))
+//         {
+//             gridGenerator.InitializeGrid();
+//             EditorUtility.SetDirty(gridGenerator);
+//         }
+//     }
+// }
+// #endif
