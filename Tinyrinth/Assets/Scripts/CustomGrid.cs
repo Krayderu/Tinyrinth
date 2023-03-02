@@ -24,6 +24,11 @@ public class CustomGrid : MonoBehaviour
         }
     }
 
+    public bool IsWithinBounds(int row, int col)
+    {
+        return (row >= 0 && row < cells.GetLength(0)) && (col >= 0 && col < cells.GetLength(1));
+    }
+
     public bool IsPlaceable(Vector3Int position, PassageTile data)
     {
         int x = position.x;
@@ -132,27 +137,6 @@ public class CustomGrid : MonoBehaviour
         gridPos.y = position.y;
 
         return gridPos;
-    }
-
-    void OnMouseUp()
-    {
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = Camera.main.nearClipPlane; // Set the z-coordinate to the near clip plane distance
-        Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
-
-        Vector3Int proposedPos = GetGridCellPosition(worldPos);
-        PassageTile proposedTile = GetComponent<GridGenerator>().prefabs[Random.Range(0, GetComponent<GridGenerator>().prefabs.Length)];
-
-        Debug.Log(proposedPos);
-
-        if (IsPlaceable(proposedPos, proposedTile))
-        {
-            Debug.Log("une tile est placeable à " + proposedPos);
-            // Tile is placeable, snap to grid and set cell data
-            Vector3 snappedPos = GetSnappedPosition(proposedPos);
-            cells[proposedPos.x, proposedPos.z] = proposedTile;
-            Instantiate(proposedTile, snappedPos, Quaternion.identity);
-        }
     }
 
     #region ArrayOperations
