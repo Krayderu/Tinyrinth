@@ -8,12 +8,56 @@ using UnityEditor;
 
 public class GridGenerator : MonoBehaviour
 {
+    // Generation de grille custom
+    
+    public int rows = 5; // Nombre de lignes de la grille
+    public int columns = 5; // Nombre de colonnes de la grille
+    float cellSize = 1.0f; // Taille de chaque cellule de la grille
+    public float cellSpacing = 0.2f; // Espacement entre les cellules de la grille
+    void GenerateGridWindow()
+    {
+        GameObject gridObject = new GameObject("Grid");
+        gridObject.AddComponent<CustomGrid>();
+        Undo.RegisterCreatedObjectUndo(gridObject, "Created Grid");
+
+        Vector3 startPosition = Vector3.zero;
+        Vector3 currentPosition = startPosition;
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int column = 0; column < columns; column++)
+            {
+                GameObject cell = new GameObject(row.ToString() + "," + column.ToString());
+                Undo.RegisterCreatedObjectUndo(cell, "Created Cell");
+
+                cell.transform.position = currentPosition;
+                cell.transform.parent = gridObject.transform;
+
+                // Ajouter le composant Empty
+                cell.AddComponent<MeshFilter>();
+                cell.AddComponent<MeshRenderer>();
+
+                currentPosition += new Vector3(cellSize + cellSpacing, 0, 0);
+            }
+
+            currentPosition = startPosition;
+            currentPosition += new Vector3(0, 0, (cellSize + cellSpacing) * (row + 1));
+        }
+    }
+
+    // Addition de prefabs sur la grille + data
+
+
     public PassageTile[] prefabs; // Liste de prefabs à assigner aléatoirement aux cellules
     private List<PassageTile> instantiatedPrefabs = new List<PassageTile>(); // Liste des prefabs instanciés
 
     void Start()
     {
+        GenerateGridWindow();
+
+        Debug.Log("grilleGénerée");
         GenerateGrid();
+        Debug.Log("la grille contient " + rows * columns + " cases");
     }
 
     public void InitializeGrid()
@@ -32,9 +76,10 @@ public class GridGenerator : MonoBehaviour
         }
 
         CustomGrid customGridObject = gridObject.GetComponent<CustomGrid>();
+
         if (customGridObject != null)
         {
-
+            customGridObject.InitializeGridData(rows, columns);
 
             // Supprimer les anciens prefabs instanciés
             foreach (PassageTile prefab in instantiatedPrefabs)
@@ -49,9 +94,9 @@ public class GridGenerator : MonoBehaviour
                 int row, column;
                 if (ParseCellName(cellTransform.name, out row, out column))
                 {
-                    // Vérifier si la cellule est intérieure à la grille
-                    if (row > 0 && row < 8 && column > 0 && column < 8)
-                    {
+                    //// Vérifier si la cellule est intérieure à la grille
+                    //if (row > 0 && row < rows && column > 0 && column < columns)
+                    //{
                         // Assigner un prefab aléatoire à la cellule
                         PassageTile prefab = prefabs[Random.Range(0, prefabs.Length)];
                         PassageTile instance = Instantiate(prefab, cellTransform.position, Quaternion.identity);
@@ -61,7 +106,7 @@ public class GridGenerator : MonoBehaviour
                         instantiatedPrefabs.Add(instance);
 
                         customGridObject.cells[row, column] = instance;
-                    }
+                    //}
                 }
             }
 

@@ -4,24 +4,13 @@ using UnityEngine;
 
 public class CustomGrid : MonoBehaviour
 {
-    public PassageTile[,] cells; //An array of the coordinates of cells in the CustomGrid
 
-    public Vector3 GetMouseWorldPosition()
+    public PassageTile[,] cells;
+
+    public void InitializeGridData(int rows, int columns)
     {
-        // Get the position on the tilemap that the mouse is pointing to
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Plane plane = new Plane(Camera.main.transform.forward, transform.position);
-        if (plane.Raycast(ray, out float distance))
-        {
-            Vector3 hitPoint = ray.GetPoint(distance);
-            return hitPoint;
-        }
-        else
-        {
-            return Vector3.zero;
-        }
+        cells = new PassageTile[rows, columns];
     }
-
     public PassageTile getTile(int x,int y)
     {
         //x = row y = column
@@ -147,11 +136,18 @@ public class CustomGrid : MonoBehaviour
 
     void OnMouseUp()
     {
-        Vector3Int proposedPos = GetGridCellPosition(GetMouseWorldPosition());
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = Camera.main.nearClipPlane; // Set the z-coordinate to the near clip plane distance
+        Vector3 worldPos = Camera.main.ScreenToWorldPoint(mousePos);
+
+        Vector3Int proposedPos = GetGridCellPosition(worldPos);
         PassageTile proposedTile = GetComponent<GridGenerator>().prefabs[Random.Range(0, GetComponent<GridGenerator>().prefabs.Length)];
+
+        Debug.Log(proposedPos);
 
         if (IsPlaceable(proposedPos, proposedTile))
         {
+            Debug.Log("une tile est placeable à " + proposedPos);
             // Tile is placeable, snap to grid and set cell data
             Vector3 snappedPos = GetSnappedPosition(proposedPos);
             cells[proposedPos.x, proposedPos.z] = proposedTile;
@@ -159,6 +155,58 @@ public class CustomGrid : MonoBehaviour
         }
     }
 
+    #region ArrayOperations
+    public enum Direction
+    {
+        Left,
+        Right,
+        Up,
+        Down
+    }
 
+    public void ShiftRow(int rowIndex, PassageTile replaceValue, Direction direction)
+    {
+        PassageTile lastValue = cells[rowIndex, cells.GetLength(1) - 1];
+
+        if (direction == Direction.Left)
+        {
+            for (int j = cells.GetLength(1) - 1; j > 0; j--)
+            {
+                cells[rowIndex, j] = cells[rowIndex, j - 1];
+            }
+            cells[rowIndex, 0] = replaceValue;
+        }
+        else if (direction == Direction.Right)
+        {
+            for (int j = 0; j < cells.GetLength(1) - 1; j++)
+            {
+                cells[rowIndex, j] = cells[rowIndex, j + 1];
+            }
+            cells[rowIndex, cells.GetLength(1) - 1] = replaceValue;
+        }
+    }
+
+    public void ShiftColumn(int columnIndex, PassageTile replaceValue, Direction direction)
+    {
+        PassageTile lastValue = cells[cells.GetLength(0) - 1, columnIndex];
+
+        if (direction == Direction.Up)
+        {
+            for (int i = cells.GetLength(0) - 1; i > 0; i--)
+            {
+                cells[i, columnIndex] = cells[i - 1, columnIndex];
+            }
+            cells[0, columnIndex] = replaceValue;
+        }
+        else if (direction == Direction.Down)
+        {
+            for (int i = 0; i < cells.GetLength(0) - 1; i++)
+            {
+                cells[i, columnIndex] = cells[i + 1, columnIndex];
+            }
+            cells[cells.GetLength(0) - 1, columnIndex] = replaceValue;
+        }
+    }
+    #endregion
 }
 
