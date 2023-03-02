@@ -205,7 +205,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9874e1f0cdfbbfd4da40599379ec6033, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sockets: 01010000
+  sockets: 01000001
   rotation: 0
 --- !u!1 &3050093527571480133
 GameObject:

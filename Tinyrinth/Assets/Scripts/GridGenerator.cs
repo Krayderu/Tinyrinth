@@ -66,7 +66,7 @@ public class GridGenerator : MonoBehaviour
         GameObject gridObject = GameObject.Find("Grid");
         if (gridObject == null)
         {
-            Debug.LogError("La grille n'a pas �t� trouv�e.");
+            Debug.LogError("La grille n'a pas ete trouvee.");
             return;
         }
 
@@ -89,10 +89,10 @@ public class GridGenerator : MonoBehaviour
                 int row, column;
                 if (ParseCellName(cellTransform.name, out row, out column))
                 {
-                    //// V�rifier si la cellule est int�rieure � la grille
+                    //// Verifier si la cellule est interieure a la grille
                     //if (row > 0 && row < rows && column > 0 && column < columns)
                     //{
-                        // Assigner un prefab al�atoire � la cellule
+                        // Assigner un prefab aleatoire a la cellule
                         PassageTile prefab = prefabs[Random.Range(0, prefabs.Length)];
                         PassageTile instance = Instantiate(prefab, cellTransform.position, Quaternion.identity);
                         instance.transform.rotation = Quaternion.Euler(0, Random.Range(0, 4) * 90, 0); // Rotation al�atoire en incr�ment de 90 degr�s
@@ -109,7 +109,7 @@ public class GridGenerator : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Le composant CustomGrid n'a pas �t� trouv� sur l'objet Grid.");
+            Debug.LogError("Le composant CustomGrid n'a pas ete trouve sur l'objet Grid.");
         }
     }
 

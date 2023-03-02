@@ -28,10 +28,10 @@ public class CustomGrid : MonoBehaviour
         }
     }
 
-    public bool IsWithinBounds(int row, int col)
-    {
-        return (row >= 0 && row < cells.GetLength(0)) && (col >= 0 && col < cells.GetLength(1));
-    }
+    //public bool IsWithinBounds(int row, int col)
+    //{
+    //    return (row >= 0 && row < cells.GetLength(0)) && (col >= 0 && col < cells.GetLength(1));
+    //}
 
     public bool IsPlaceable(Vector3Int position, PassageTile data)
     {
@@ -150,7 +150,7 @@ public class CustomGrid : MonoBehaviour
         Down
     }
 
-    public ShiftRowForReal(int rowIndex, PassageTile replaceValue, Direction direction){
+    public void ShiftRowForReal(int rowIndex, PassageTile replaceValue, Direction direction){
         var outTile = ShiftRow(rowIndex, replaceValue, direction);
         // move the tiles
         // move the player
@@ -200,6 +200,33 @@ public class CustomGrid : MonoBehaviour
             cells[cells.GetLength(0) - 1, columnIndex] = replaceValue;
         }
         return lastValue;
+    }
+    #endregion
+
+    #region Animations
+
+    private List<GameObject> TilesInRow = new List<GameObject>();
+    private List<PassageTile> TilesInColumn = new List<PassageTile>();
+
+    IEnumerator ShiftRowAnimation(Direction direction)
+    {
+        float moveDistance;
+        //row = [here, not there]
+        // move the row up by a margin
+
+
+        //maybe anticipation by moving the row a bit in the opposite direction
+        //move all tiles by 1 in the direction of the shift
+        //move row back to y = 0
+        yield return null;
+    }
+
+    void DisappearAnim()
+    {
+        //spin real fast
+        //Spin faster
+        //shrink
+        //particle
     }
     #endregion
 }
