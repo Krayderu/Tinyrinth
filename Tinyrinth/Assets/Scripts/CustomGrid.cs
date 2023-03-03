@@ -8,10 +8,16 @@ public class CustomGrid : MonoBehaviour
     public PassageTile[,] cells;
     private float cellSpacing = 0f;
     private float cellSize = 0f;
+    public float gridSize = 1f;
     public int rows;
     public int columns;
     public bool isMoving = false;
     bool isSpinning = false;
+    private PlayerController player;
+
+    public void Start(){
+        player = FindObjectOfType<PlayerController>();
+    }
 
     public void InitializeGridData(int nRows, int nColumns, float size, float spacing)
     {
@@ -21,6 +27,7 @@ public class CustomGrid : MonoBehaviour
         cellSize = size;
         cellSpacing = spacing;
     }
+
     public PassageTile getTile(int x,int y)
     {
         //x = row y = column
@@ -101,7 +108,6 @@ public class CustomGrid : MonoBehaviour
 
     public Vector3Int GetGridCellPosition(Vector3 position)
     {
-        float gridSize = 1f;
         int x = Mathf.RoundToInt(position.x / gridSize);
         int y = Mathf.RoundToInt(position.z / gridSize);
 
@@ -111,10 +117,13 @@ public class CustomGrid : MonoBehaviour
         return cellPos;
     }
 
+    // public Vector3 CellToWorld(Vector3Int pos){
+    //     return new Vector3(pos.x * (cellSize + cellSpacing), 0, pos.z * (cellSize + cellSpacing));
+    // }
+
 
     public Vector3 SnapToGrid(Vector3 position)
     {
-        float gridSize = 1f;
         int x = Mathf.RoundToInt(position.x / gridSize);
         int y = Mathf.RoundToInt(position.z / gridSize);
 
@@ -128,9 +137,52 @@ public class CustomGrid : MonoBehaviour
         Vector3 gridPos = new Vector3(gridX, 0, gridY);
 
         // Adjust the y-coordinate of the snapped position to match the original position
-        gridPos.y = position.y;
+        //gridPos.y = position.y;
 
         return gridPos;
+    }
+
+    public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
+        List<PassageTile> totalRow = GetRow(rowIndex);
+        // Shift the data
+        PassageTile outTile = ShiftDataRow(rowIndex, replaceValue, direction);
+
+        // Shift visually
+        totalRow.Add(replaceValue); // add the new tile so it gets moved as well
+        // move the tiles
+        foreach(PassageTile tile in totalRow)
+        {
+            StartCoroutine(ShiftAnimation(tile, direction, outTile));
+        }
+        
+        // if the player is on one of the shifted tiles
+        Vector3Int playerPos = GetGridCellPosition(player.gameObject.transform.position);
+        // move the player
+        if (playerPos.x == rowIndex){
+            StartCoroutine(ShiftAnimation(player, direction, outTile));
+        }
+
+    }
+
+    public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
+        List<PassageTile> totalColumn = GetColumn(columnIndex);
+        // Shift the data
+        PassageTile outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
+
+        // Shift visually
+        totalColumn.Add(replaceValue);
+        // move the tiles
+        foreach(PassageTile tile in totalColumn)
+        {
+            StartCoroutine(ShiftAnimation(tile, direction, outTile));
+        }
+
+        // if the player is on one of the shifted tiles
+        Vector3Int playerPos = GetGridCellPosition(player.gameObject.transform.position);
+        // move the player
+        if (playerPos.z == columnIndex){
+            StartCoroutine(ShiftAnimation(player, direction, outTile));
+        }
     }
 
     #region ArrayOperations
@@ -149,41 +201,6 @@ public class CustomGrid : MonoBehaviour
             totalColumn.Add(cells[columnIndex, i]);
         }
         return totalColumn;
-    }
-
-    public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
-        List<PassageTile> totalRow = GetRow(rowIndex);
-        // Shift the data
-        PassageTile outTile = ShiftDataRow(rowIndex, replaceValue, direction);
-
-        // Shift visually
-        totalRow.Add(replaceValue); // add the new tile so it gets moved as well
-        // move the tiles
-        foreach(PassageTile tile in totalRow)
-        {
-            StartCoroutine(ShiftRowAnimation(tile, direction, outTile));
-        }
-        // TODO
-        // if the player is on one of the shifted tiles
-        // move the player
-
-    }
-
-    public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
-        List<PassageTile> totalColumn = GetColumn(columnIndex);
-        // Shift the data
-        PassageTile outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
-
-        // Shift visually
-        totalColumn.Add(replaceValue);
-        // move the tiles
-        foreach(PassageTile tile in totalColumn)
-        {
-            StartCoroutine(ShiftRowAnimation(tile, direction, outTile));
-        }
-        // TODO
-        // if the player is on one of the shifted tiles
-        // move the player
     }
 
     private PassageTile ShiftDataRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction)
@@ -235,10 +252,10 @@ public class CustomGrid : MonoBehaviour
 
     #region Animations
 
-    private List<GameObject> TilesInRow = new List<GameObject>();
-    private List<PassageTile> TilesInColumn = new List<PassageTile>();
+    //private List<GameObject> TilesInRow = new List<GameObject>();
+    //private List<PassageTile> TilesInColumn = new List<PassageTile>();
 
-    IEnumerator ShiftRowAnimation(PassageTile tile, Utils.Direction direction, PassageTile outTile)
+    IEnumerator ShiftAnimation(MonoBehaviour obj, Utils.Direction direction, PassageTile outTile)
     {
 
         isMoving = true;
@@ -248,15 +265,15 @@ public class CustomGrid : MonoBehaviour
 
         // move the row up by a margin
         float t = 0.0f;
-        Vector3 startPosition = tile.transform.position;
+        Vector3 startPosition = obj.transform.position;
         Vector3 endPosition = startPosition + Vector3.up * vDistance;
         while (t < moveDuration /3)
         {
             t += Time.deltaTime;
-            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
+            obj.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
             yield return null;
         }
-        // move tile direction
+        // move direction
         Vector3 directionVector = new Vector3(0, 0, 0);
         if(direction == Utils.Direction.Left)
         {
@@ -277,24 +294,24 @@ public class CustomGrid : MonoBehaviour
         }
 
         t = 0f;
-        startPosition = tile.transform.position;
+        startPosition = obj.transform.position;
         endPosition = startPosition + (directionVector * moveDistance);
         while (t < moveDuration /3)
         {
             t += Time.deltaTime;
-            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
+            obj.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
             yield return null;
         }
 
         //move tile back down
         t = 0f;
 
-        startPosition = tile.transform.position;
+        startPosition = obj.transform.position;
         endPosition = startPosition + Vector3.down * vDistance;
         while (t < moveDuration /3)
         {
             t += Time.deltaTime;
-            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
+            obj.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
             yield return null;
         }
         isMoving = false;

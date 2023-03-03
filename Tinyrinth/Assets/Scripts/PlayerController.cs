@@ -86,7 +86,10 @@ public class PlayerController : MonoBehaviour
         // move character
         controller.Move(movementDirection * movementSpeed * Time.deltaTime);
         // rotate in direction of movement
-        transform.rotation = Quaternion.LookRotation(movementDirection);
+        if (movementDirection != Vector3.zero){
+            //transform.rotation = Quaternion.LookRotation(movementDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation (movementDirection), Time.deltaTime * 10f);
+        }
         #endregion
 
         #region GridInteractions
