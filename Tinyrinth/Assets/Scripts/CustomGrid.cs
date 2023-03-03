@@ -11,6 +11,7 @@ public class CustomGrid : MonoBehaviour
     public int rows;
     public int columns;
     public bool isMoving = false;
+    bool isSpinning = false;
 
     public void InitializeGridData(int nRows, int nColumns, float size, float spacing)
     {
@@ -276,16 +277,38 @@ public class CustomGrid : MonoBehaviour
             yield return null;
         }
         isMoving = false;
-
+        if (!isSpinning)
+        {
+            StartCoroutine(DisappearAnim(outTile));
+        }
     }
 
-    void DisappearAnim()
+    IEnumerator DisappearAnim(PassageTile outTile)
     {
+        isSpinning = true;
+        float animDuration = .3f;
+        float spinMaxSpeed = 10f;
+        Vector3 scale = Vector3.one;
+        float rotation = 0f;
+        float rotationSpeed = 0f;
+        float rotationAccel = 1f;
         //spin real fast
-        //Spin faster
-        //shrink
-        //particle
-        //Destroy(outTile);
+        var t = 0f;
+
+        while (t < animDuration)
+        {
+            t += Time.deltaTime;
+            rotation += rotationSpeed;
+            rotationSpeed += rotationAccel;
+            scale = Vector3.Lerp(Vector3.one, Vector3.zero, t / animDuration);
+            outTile.transform.Rotate(new Vector3(0, rotation, 0));
+            outTile.transform.localScale = scale;
+            yield return null;
+        }
+        
+        Destroy(outTile.gameObject);
+
+        isSpinning = false;
     }
     #endregion
 }
