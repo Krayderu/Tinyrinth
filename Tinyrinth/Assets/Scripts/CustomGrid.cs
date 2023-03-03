@@ -8,10 +8,14 @@ public class CustomGrid : MonoBehaviour
     public PassageTile[,] cells;
     private float cellSpacing = 0f;
     private float cellSize = 0f;
+    public int rows;
+    public int columns;
 
-    public void InitializeGridData(int rows, int columns, float size, float spacing)
+    public void InitializeGridData(int nRows, int nColumns, float size, float spacing)
     {
-        cells = new PassageTile[rows, columns];
+        rows = nRows;
+        columns = nColumns;
+        cells = new PassageTile[nRows, nColumns];
         cellSize = size;
         cellSpacing = spacing;
     }
@@ -33,29 +37,15 @@ public class CustomGrid : MonoBehaviour
     //    return (row >= 0 && row < cells.GetLength(0)) && (col >= 0 && col < cells.GetLength(1));
     //}
 
-    public bool IsPlaceable(Vector3Int position, PassageTile data)
+    public bool IsPlaceable(Vector3Int position)
     {
         int x = position.x;
         int y = position.z;
 
-        // Check if the tile is on the border of the grid but not on a corner
-        if (!((x == 0 && y > 0 && y < cells.GetLength(1) - 1) || // Left border
-              (x == cells.GetLength(0) - 1 && y > 0 && y < cells.GetLength(1) - 1) || // Right border
-              (y == 0 && x > 0 && x < cells.GetLength(0) - 1) || // Bottom border
-              (y == cells.GetLength(1) - 1 && x > 0 && x < cells.GetLength(0) - 1))) // Top border
-        {
-            return false;
-        }
-
-        // Check if the tile overlaps with any other tiles
-        if (getTile(x, y) != null)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return (
+            (((x == rows || x == -1) && !(y <= -1 || y >= columns)) ||
+            ((y == columns || y == -1) && !(x <= -1 || x >= rows)))
+        );
     }
 
     public bool IsTileConnected(Vector3Int cellpos, PassageTile data, int rotation)
@@ -142,25 +132,24 @@ public class CustomGrid : MonoBehaviour
     }
 
     #region ArrayOperations
-    public enum Direction
-    {
-        Left,
-        Right,
-        Up,
-        Down
-    }
 
-    public void ShiftRowForReal(int rowIndex, PassageTile replaceValue, Direction direction){
-        var outTile = ShiftRow(rowIndex, replaceValue, direction);
+    public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
+        var outTile = ShiftDataRow(rowIndex, replaceValue, direction);
         // move the tiles
         // move the player
     }
 
-    public PassageTile ShiftRow(int rowIndex, PassageTile replaceValue, Direction direction)
-    {
-        PassageTile lastValue = cells[rowIndex, direction == Direction.Left ? 0 : cells.GetLength(1) - 1];
+    public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
+        var outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
+        // move the tiles
+        // move the player
+    }
 
-        if (direction == Direction.Left)
+    public PassageTile ShiftDataRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction)
+    {
+        PassageTile lastValue = cells[rowIndex, direction == Utils.Direction.Left ? 0 : cells.GetLength(1) - 1];
+
+        if (direction == Utils.Direction.Left)
         {
             for (int j = cells.GetLength(1) - 1; j > 0; j--)
             {
@@ -168,7 +157,7 @@ public class CustomGrid : MonoBehaviour
             }
             cells[rowIndex, 0] = replaceValue;
         }
-        else if (direction == Direction.Right)
+        else if (direction == Utils.Direction.Right)
         {
             for (int j = 0; j < cells.GetLength(1) - 1; j++)
             {
@@ -179,11 +168,11 @@ public class CustomGrid : MonoBehaviour
         return lastValue;
     }
 
-    public PassageTile ShiftColumn(int columnIndex, PassageTile replaceValue, Direction direction)
+    public PassageTile ShiftDataColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction)
     {
-        PassageTile lastValue = cells[direction == Direction.Up ? 0 : cells.GetLength(0) - 1, columnIndex];
+        PassageTile lastValue = cells[direction == Utils.Direction.Up ? 0 : cells.GetLength(0) - 1, columnIndex];
 
-        if (direction == Direction.Up)
+        if (direction == Utils.Direction.Up)
         {
             for (int i = cells.GetLength(0) - 1; i > 0; i--)
             {
@@ -191,7 +180,7 @@ public class CustomGrid : MonoBehaviour
             }
             cells[0, columnIndex] = replaceValue;
         }
-        else if (direction == Direction.Down)
+        else if (direction == Utils.Direction.Down)
         {
             for (int i = 0; i < cells.GetLength(0) - 1; i++)
             {
@@ -208,7 +197,7 @@ public class CustomGrid : MonoBehaviour
     private List<GameObject> TilesInRow = new List<GameObject>();
     private List<PassageTile> TilesInColumn = new List<PassageTile>();
 
-    IEnumerator ShiftRowAnimation(Direction direction)
+    IEnumerator ShiftRowAnimation(Utils.Direction direction)
     {
         float moveDistance;
         //row = [here, not there]
