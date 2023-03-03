@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     private PassageTile[] prefabs;
     private PassageTile currentPrefab;
     public Vector2 gridPos = new Vector2(0,0);
-    CustomGrid cGrid;
+    private bool isRotating = false;
 
     private void Start()
     {
@@ -115,7 +115,7 @@ public class PlayerController : MonoBehaviour
         return prefabs[Random.Range(0, prefabs.Length)];
     }
 
-    private bool isRotating = false;
+    
 
     private IEnumerator SpinAnimation()
     {

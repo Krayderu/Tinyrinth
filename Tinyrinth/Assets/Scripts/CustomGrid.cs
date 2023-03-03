@@ -10,6 +10,7 @@ public class CustomGrid : MonoBehaviour
     private float cellSize = 0f;
     public int rows;
     public int columns;
+    public bool isMoving = false;
 
     public void InitializeGridData(int nRows, int nColumns, float size, float spacing)
     {
@@ -134,18 +135,23 @@ public class CustomGrid : MonoBehaviour
     #region ArrayOperations
 
     public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
-        List<PassageTile> totalRow = new List<PassageTile>(){replaceValue}
-        for (i = 0; i < rows; i++){
+        List<PassageTile> totalRow = new List<PassageTile>() { replaceValue };
+        for (int i = 0; i < rows; i++){
             totalRow.Add(cells[rowIndex, i]);
         }
         PassageTile outTile = ShiftDataRow(rowIndex, replaceValue, direction);
+
         // move the tiles
+        foreach(PassageTile tile in totalRow)
+        {
+            StartCoroutine(ShiftRowAnimation(tile ,direction));
+        }
         // move the player
     }
 
     public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
-        List<PassageTile> totalRow = new List<PassageTile>(){replaceValue}
-        for (i = 0; i < columns; i++){
+        List<PassageTile> totalRow = new List<PassageTile>() { replaceValue };
+        for (int i = 0; i < columns; i++){
             totalRow.Add(cells[i, columnIndex]);
         }
         PassageTile outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
@@ -205,17 +211,67 @@ public class CustomGrid : MonoBehaviour
     private List<GameObject> TilesInRow = new List<GameObject>();
     private List<PassageTile> TilesInColumn = new List<PassageTile>();
 
-    IEnumerator ShiftRowAnimation(Utils.Direction direction)
+    IEnumerator ShiftRowAnimation(PassageTile tile, Utils.Direction direction)
     {
-        float moveDistance;
-        //row = [here, not there]
+
+        isMoving = true;
+        float moveDistance = cellSize + cellSpacing;
+        float vDistance = 0.5f;
+        float moveDuration = 0.5f;
+
         // move the row up by a margin
+        float t = 0.0f;
+        Vector3 startPosition = tile.transform.position;
+        Vector3 endPosition = startPosition + Vector3.up * vDistance;
+        while (t < moveDuration /3)
+        {
+            t += Time.deltaTime;
+            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / moveDuration);
+            yield return null;
+        }
+        // move tile direction
+        Vector3 directionVector = new Vector3(0, 0, 0);
+        if(direction == Utils.Direction.Left)
+        {
+            directionVector = new Vector3(0,0,1);
+           
+        }
+        if (direction == Utils.Direction.Right)
+        {
+            directionVector = new Vector3(0, 0, -1);
+        }
+        if (direction == Utils.Direction.Up)
+        {
+            directionVector = new Vector3(1, 0, 0);
 
+        }
+        if (direction == Utils.Direction.Down)
+        {
+            directionVector = new Vector3(-1, 0, 0);
+        }
 
-        //maybe anticipation by moving the row a bit in the opposite direction
-        //move all tiles by 1 in the direction of the shift
-        //move row back to y = 0
-        yield return null;
+        t = 0f;
+        startPosition = tile.transform.position;
+        endPosition = startPosition + directionVector * moveDistance;
+        while (t < moveDuration /3)
+        {
+            t += Time.deltaTime;
+            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / moveDuration);
+            yield return null;
+        }
+
+        //move tile back down
+        t = 0f;
+
+        startPosition = tile.transform.position;
+        endPosition = startPosition + Vector3.down * vDistance;
+        while (t < moveDuration /3)
+        {
+            t += Time.deltaTime;
+            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / moveDuration);
+            yield return null;
+        }
+        isMoving = false;
     }
 
     void DisappearAnim()
