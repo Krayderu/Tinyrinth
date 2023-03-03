@@ -25,6 +25,9 @@ public class PlayerController : MonoBehaviour
 
     //variable responsible for animation states
     private bool isRotating = false;                //Animation condition
+
+    private CharacterController controller;
+    [SerializeField] private float movementSpeed = 0.05f;
     
 
 
@@ -46,9 +49,12 @@ public class PlayerController : MonoBehaviour
         //Instantiate HoverPrefab
         //currentPickedPrefab = Instantiate(HoverPrefab(prefabIndex));
         
+        controller = GetComponent<CharacterController>();
+        
     }
     private void Update()
     {
+        Vector3 movementDirection = Vector3.zero;
         var mousePos = GetMouseWorldPosition();
         Vector3 snapPos = grid.SnapToGrid(mousePos);
 
@@ -58,23 +64,47 @@ public class PlayerController : MonoBehaviour
         //currentPickedPrefab.transform.position = snapPos;
 
         
-        //Player Movement
+        #region PlayerMovement
         if (Input.GetKey(KeyCode.W))
         {
-
+            movementDirection += new Vector3(1, 0, 0);
         }
+        if (Input.GetKey(KeyCode.S))
+        {
+            movementDirection += new Vector3(-1, 0, 0);
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            movementDirection += new Vector3(0, 0, 1);
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            movementDirection += new Vector3(0, 0, -1);
+        }
+        movementDirection.Normalize();
+    
+        // move character
+        controller.Move(movementDirection * movementSpeed * Time.deltaTime);
+        // rotate in direction of movement
+        transform.rotation = Quaternion.LookRotation(movementDirection);
+        #endregion
 
+        #region GridInteractions
+        // ROTATE PIECE
         if (Input.GetKeyUp(KeyCode.R) && !isRotating){
-            // rotation asjadj euler machin
+            // rotate visually
             StartCoroutine(SpinAnimation(currentPrefab));
             //StartCoroutine(SpinAnimation(currentPickedPrefab));
             //chosenPrefab.rotation = (chosenPrefab.rotation + 1) % 4;
+
+            // rotate data
             currentPrefab.rotation = (currentPrefab.rotation + 1) % 4;
             //currentPickedPrefab.rotation = (currentPickedPrefab.rotation + 1) % 4;
             //Debug.Log(chosenPrefab.rotation);
             //Debug.Log(currentPickedPrefab.rotation);
         }
 
+        // PLACE PIECE
         if (Input.GetMouseButtonUp(0)){
             //changer de tile pour current prefab
             //Debug.Log(grid.SnapToGrid(click));
@@ -129,6 +159,7 @@ public class PlayerController : MonoBehaviour
             //currentPickedPrefab.transform.position = snapPos;
             currentPrefab.transform.position = snapPos;
         }
+        #endregion
     }
 
     public Vector3 GetMouseWorldPosition()
