@@ -135,16 +135,16 @@ public class CustomGrid : MonoBehaviour
     #region ArrayOperations
 
     public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
-        List<PassageTile> totalRow = new List<PassageTile>() { replaceValue };
+        List<PassageTile> totalRow = new List<PassageTile>{ replaceValue };
         for (int i = 0; i < rows; i++){
-            totalRow.Add(cells[rowIndex, i]);
+            totalRow.Add(cells[i, rowIndex]);
         }
         PassageTile outTile = ShiftDataRow(rowIndex, replaceValue, direction);
 
         // move the tiles
         foreach(PassageTile tile in totalRow)
         {
-            StartCoroutine(ShiftRowAnimation(tile ,direction));
+            StartCoroutine(ShiftRowAnimation(tile, direction, outTile));
         }
         // move the player
     }
@@ -152,55 +152,60 @@ public class CustomGrid : MonoBehaviour
     public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
         List<PassageTile> totalRow = new List<PassageTile>() { replaceValue };
         for (int i = 0; i < columns; i++){
-            totalRow.Add(cells[i, columnIndex]);
+            totalRow.Add(cells[columnIndex, i]);
         }
         PassageTile outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
+        
         // move the tiles
+        foreach(PassageTile tile in totalRow)
+        {
+            StartCoroutine(ShiftRowAnimation(tile, direction, outTile));
+        }
         // move the player
     }
 
     public PassageTile ShiftDataRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction)
     {
-        PassageTile lastValue = cells[rowIndex, direction == Utils.Direction.Left ? 0 : cells.GetLength(1) - 1];
+        PassageTile lastValue = cells[direction == Utils.Direction.Left ? cells.GetLength(1) - 1 : 0, rowIndex];
 
         if (direction == Utils.Direction.Left)
         {
             for (int j = cells.GetLength(1) - 1; j > 0; j--)
             {
-                cells[rowIndex, j] = cells[rowIndex, j - 1];
+                cells[j, rowIndex] = cells[j - 1, rowIndex];
             }
-            cells[rowIndex, 0] = replaceValue;
+            cells[0, rowIndex] = replaceValue;
         }
         else if (direction == Utils.Direction.Right)
         {
             for (int j = 0; j < cells.GetLength(1) - 1; j++)
             {
-                cells[rowIndex, j] = cells[rowIndex, j + 1];
+                cells[j, rowIndex] = cells[j + 1, rowIndex];
             }
-            cells[rowIndex, cells.GetLength(1) - 1] = replaceValue;
+            cells[cells.GetLength(1) - 1, rowIndex] = replaceValue;
         }
         return lastValue;
     }
 
     public PassageTile ShiftDataColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction)
     {
-        PassageTile lastValue = cells[direction == Utils.Direction.Up ? 0 : cells.GetLength(0) - 1, columnIndex];
+        PassageTile lastValue = cells[columnIndex, direction == Utils.Direction.Up ? cells.GetLength(0) - 1 : 0];
 
         if (direction == Utils.Direction.Up)
         {
             for (int i = cells.GetLength(0) - 1; i > 0; i--)
             {
-                cells[i, columnIndex] = cells[i - 1, columnIndex];
+                cells[columnIndex, i] = cells[columnIndex, i - 1];
             }
-            cells[0, columnIndex] = replaceValue;
+            cells[columnIndex, 0] = replaceValue;
         }
         else if (direction == Utils.Direction.Down)
         {
             for (int i = 0; i < cells.GetLength(0) - 1; i++)
             {
-                cells[i, columnIndex] = cells[i + 1, columnIndex];
+                cells[columnIndex, i] = cells[columnIndex, i + 1];
             }
-            cells[cells.GetLength(0) - 1, columnIndex] = replaceValue;
+            cells[columnIndex, cells.GetLength(0) - 1] = replaceValue;
         }
         return lastValue;
     }
@@ -211,7 +216,7 @@ public class CustomGrid : MonoBehaviour
     private List<GameObject> TilesInRow = new List<GameObject>();
     private List<PassageTile> TilesInColumn = new List<PassageTile>();
 
-    IEnumerator ShiftRowAnimation(PassageTile tile, Utils.Direction direction)
+    IEnumerator ShiftRowAnimation(PassageTile tile, Utils.Direction direction, PassageTile outTile)
     {
 
         isMoving = true;
@@ -226,7 +231,7 @@ public class CustomGrid : MonoBehaviour
         while (t < moveDuration /3)
         {
             t += Time.deltaTime;
-            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / moveDuration);
+            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
             yield return null;
         }
         // move tile direction
@@ -234,7 +239,6 @@ public class CustomGrid : MonoBehaviour
         if(direction == Utils.Direction.Left)
         {
             directionVector = new Vector3(0,0,1);
-           
         }
         if (direction == Utils.Direction.Right)
         {
@@ -252,11 +256,11 @@ public class CustomGrid : MonoBehaviour
 
         t = 0f;
         startPosition = tile.transform.position;
-        endPosition = startPosition + directionVector * moveDistance;
+        endPosition = startPosition + (directionVector * moveDistance);
         while (t < moveDuration /3)
         {
             t += Time.deltaTime;
-            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / moveDuration);
+            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
             yield return null;
         }
 
@@ -268,10 +272,11 @@ public class CustomGrid : MonoBehaviour
         while (t < moveDuration /3)
         {
             t += Time.deltaTime;
-            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / moveDuration);
+            tile.transform.position = Vector3.Lerp(startPosition, endPosition, t / (moveDuration / 3));
             yield return null;
         }
         isMoving = false;
+
     }
 
     void DisappearAnim()
@@ -280,6 +285,7 @@ public class CustomGrid : MonoBehaviour
         //Spin faster
         //shrink
         //particle
+        //Destroy(outTile);
     }
     #endregion
 }

@@ -105,7 +105,7 @@ public class GridGenerator : MonoBehaviour
                 }
             }
 
-            Debug.Log(customGridObject.cells.Length) ;
+            //Debug.Log(customGridObject.cells.Length) ;
         }
         else
         {

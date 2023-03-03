@@ -22,14 +22,16 @@ public class PlayerController : MonoBehaviour
         GridGenerator generator = FindObjectOfType<GridGenerator>();
         prefabs = generator.prefabs;
         var chosenPrefab = pickPrefab();
-        Debug.Log(chosenPrefab);
+        //Debug.Log(chosenPrefab);
         currentPrefab = Instantiate(chosenPrefab);
         
     }
     private void Update()
     {
         var mousePos = GetMouseWorldPosition();
-        currentPrefab.transform.position = grid.SnapToGrid(mousePos);
+        Vector3 snapPos = grid.SnapToGrid(mousePos);
+        currentPrefab.transform.position = snapPos;
+
         
         //Player Movement
         if (Input.GetKey(KeyCode.W))
@@ -44,16 +46,14 @@ public class PlayerController : MonoBehaviour
         }
 
         if (Input.GetMouseButtonDown(0)){
-            Vector3 click = mousePos;
-            Vector3 snapPos = grid.SnapToGrid(click);
             //changer de tile pour current prefab
             //Debug.Log(grid.SnapToGrid(click));
 
-            Vector3Int gridCellPos  = grid.GetGridCellPosition(snapPos);
+            Vector3Int gridCellPos = grid.GetGridCellPosition(snapPos);
 
             //Debug.Log(gridCellPos);
             // Vérifier qu'on peut construire
-            if (!grid.IsPlaceable(gridCellPos)) return;
+            if (!grid.IsPlaceable(gridCellPos) && !grid.isMoving) return;
 
             //var newTile = Instantiate(currentPrefab, snapPos, currentPrefab.transform.rotation);
 
@@ -66,30 +66,31 @@ public class PlayerController : MonoBehaviour
                 direction = Utils.Direction.Down;
                 // shift column
                 index = gridCellPos.z;
-                grid.ShiftColumn(index, currentTile, direction);
+                grid.ShiftColumn(index, currentPrefab, direction);
 
             } else if (gridCellPos.x < 0){
                 direction = Utils.Direction.Up;
                 // shift column
                 index = gridCellPos.z;
-                grid.ShiftColumn(index, currentTile, direction);
+                grid.ShiftColumn(index, currentPrefab, direction);
             }
 
             if (gridCellPos.z >= grid.columns){
                 direction = Utils.Direction.Right;
                 // shift row
                 index = gridCellPos.x;
-                grid.ShiftRow(index, currentTile, direction);
+                grid.ShiftRow(index, currentPrefab, direction);
 
             } else if (gridCellPos.z < 0){
                 direction = Utils.Direction.Left;
                 // shift row
                 index = gridCellPos.x;
-                grid.ShiftRow(index, currentTile, direction);
+                grid.ShiftRow(index, currentPrefab, direction);
             }
             //Debug.Log(gridCellPos);
 
             currentPrefab = Instantiate(pickPrefab());
+            currentPrefab.transform.position = snapPos;
 
         }
 
