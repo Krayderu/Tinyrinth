@@ -57,12 +57,6 @@ public class PlayerController : MonoBehaviour
         Vector3 movementDirection = Vector3.zero;
         var mousePos = GetMouseWorldPosition();
         Vector3 snapPos = grid.SnapToGrid(mousePos);
-
-        // TODO: if mousePos is inside the grid, hide the cursor
-        // TODO: show a different version of the cursor when can't build
-        currentPrefab.transform.position = snapPos;
-        //currentPickedPrefab.transform.position = snapPos;
-
         
         #region PlayerMovement
         if (Input.GetKey(KeyCode.W))
@@ -84,15 +78,25 @@ public class PlayerController : MonoBehaviour
         movementDirection.Normalize();
     
         // move character
-        controller.Move(movementDirection * movementSpeed * Time.deltaTime);
-        // rotate in direction of movement
-        if (movementDirection != Vector3.zero){
-            //transform.rotation = Quaternion.LookRotation(movementDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation (movementDirection), Time.deltaTime * 10f);
+        if (!grid.isMoving){
+            controller.Move(movementDirection * movementSpeed * Time.deltaTime);
+            // rotate in direction of movement
+            if (movementDirection != Vector3.zero){
+                //transform.rotation = Quaternion.LookRotation(movementDirection);
+                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation (movementDirection), Time.deltaTime * 10f);
+            }
         }
         #endregion
 
         #region GridInteractions
+        // TODO: if mousePos is inside the grid, hide the cursor
+        bool isInBounds = !grid.IsWithinBounds(grid.GetGridCellPosition(mousePos));
+        currentPrefab.gameObject.SetActive(isInBounds);
+        
+        // TODO: show a different version of the cursor when can't build
+        currentPrefab.transform.position = snapPos;
+        //currentPickedPrefab.transform.position = snapPos;
+
         // ROTATE PIECE
         if (Input.GetKeyUp(KeyCode.R) && !isRotating){
             // rotate visually

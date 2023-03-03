@@ -41,10 +41,10 @@ public class CustomGrid : MonoBehaviour
         }
     }
 
-    //public bool IsWithinBounds(int row, int col)
-    //{
-    //    return (row >= 0 && row < cells.GetLength(0)) && (col >= 0 && col < cells.GetLength(1));
-    //}
+    public bool IsWithinBounds(Vector3Int pos)
+    {
+       return (pos.x >= 0 && pos.x < cells.GetLength(0)) && (pos.z >= 0 && pos.z < cells.GetLength(1));
+    }
 
     public bool IsPlaceable(Vector3Int position)
     {
