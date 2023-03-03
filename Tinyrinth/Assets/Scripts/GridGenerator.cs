@@ -62,6 +62,7 @@ public class GridGenerator : MonoBehaviour
 
     void GenerateGrid()
     {
+        // FIXME: rows and columns have been inversed somewhere. Probably here.
         // Trouver la grille
         GameObject gridObject = GameObject.Find("Grid");
         if (gridObject == null)

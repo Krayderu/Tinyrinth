@@ -186,7 +186,7 @@ public class CustomGrid : MonoBehaviour
         // move the player
     }
 
-    public PassageTile ShiftDataRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction)
+    private PassageTile ShiftDataRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction)
     {
         PassageTile lastValue = cells[direction == Utils.Direction.Left ? cells.GetLength(1) - 1 : 0, rowIndex];
 
@@ -209,7 +209,7 @@ public class CustomGrid : MonoBehaviour
         return lastValue;
     }
 
-    public PassageTile ShiftDataColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction)
+    private PassageTile ShiftDataColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction)
     {
         PassageTile lastValue = cells[columnIndex, direction == Utils.Direction.Up ? cells.GetLength(0) - 1 : 0];
 
