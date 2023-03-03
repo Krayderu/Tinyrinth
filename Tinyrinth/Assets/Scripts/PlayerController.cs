@@ -51,11 +51,11 @@ public class PlayerController : MonoBehaviour
 
             Vector3Int gridCellPos  = grid.GetGridCellPosition(snapPos);
 
-            Debug.Log(gridCellPos);
+            //Debug.Log(gridCellPos);
             // Vérifier qu'on peut construire
             if (!grid.IsPlaceable(gridCellPos)) return;
 
-            var newTile = Instantiate(currentPrefab, snapPos, currentPrefab.transform.rotation);
+            //var newTile = Instantiate(currentPrefab, snapPos, currentPrefab.transform.rotation);
 
 
             // 1. trouver quelle colonne / ligne : row/columnIndex
@@ -87,11 +87,10 @@ public class PlayerController : MonoBehaviour
                 index = gridCellPos.x;
                 grid.ShiftRow(index, currentTile, direction);
             }
-            Debug.Log(gridCellPos);
+            //Debug.Log(gridCellPos);
 
-            //if Index
-            
-            // 2. shift colonne/ligne
+            currentPrefab = Instantiate(pickPrefab());
+
         }
 
     }

@@ -134,13 +134,21 @@ public class CustomGrid : MonoBehaviour
     #region ArrayOperations
 
     public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
-        var outTile = ShiftDataRow(rowIndex, replaceValue, direction);
+        List<PassageTile> totalRow = new List<PassageTile>(){replaceValue}
+        for (i = 0; i < rows; i++){
+            totalRow.Add(cells[rowIndex, i]);
+        }
+        PassageTile outTile = ShiftDataRow(rowIndex, replaceValue, direction);
         // move the tiles
         // move the player
     }
 
     public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
-        var outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
+        List<PassageTile> totalRow = new List<PassageTile>(){replaceValue}
+        for (i = 0; i < columns; i++){
+            totalRow.Add(cells[i, columnIndex]);
+        }
+        PassageTile outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
         // move the tiles
         // move the player
     }
