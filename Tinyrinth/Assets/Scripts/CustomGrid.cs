@@ -135,33 +135,54 @@ public class CustomGrid : MonoBehaviour
 
     #region ArrayOperations
 
-    public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
-        List<PassageTile> totalRow = new List<PassageTile>{ replaceValue };
+    public List<PassageTile> GetRow(int rowIndex){
+        List<PassageTile> totalRow = new List<PassageTile>();
         for (int i = 0; i < rows; i++){
             totalRow.Add(cells[i, rowIndex]);
         }
+        return totalRow;
+    }
+
+    public List<PassageTile> GetColumn(int columnIndex){
+        List<PassageTile> totalColumn = new List<PassageTile>();
+        for (int i = 0; i < columns; i++){
+            totalColumn.Add(cells[columnIndex, i]);
+        }
+        return totalColumn;
+    }
+
+    public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
+        List<PassageTile> totalRow = GetRow(rowIndex);
+        // Shift the data
         PassageTile outTile = ShiftDataRow(rowIndex, replaceValue, direction);
 
+        // Shift visually
+        totalRow.Add(replaceValue); // add the new tile so it gets moved as well
         // move the tiles
         foreach(PassageTile tile in totalRow)
         {
             StartCoroutine(ShiftRowAnimation(tile, direction, outTile));
         }
+        // TODO
+        // if the player is on one of the shifted tiles
         // move the player
+
     }
 
     public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
-        List<PassageTile> totalRow = new List<PassageTile>() { replaceValue };
-        for (int i = 0; i < columns; i++){
-            totalRow.Add(cells[columnIndex, i]);
-        }
+        List<PassageTile> totalColumn = GetColumn(columnIndex);
+        // Shift the data
         PassageTile outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
-        
+
+        // Shift visually
+        totalColumn.Add(replaceValue);
         // move the tiles
-        foreach(PassageTile tile in totalRow)
+        foreach(PassageTile tile in totalColumn)
         {
             StartCoroutine(ShiftRowAnimation(tile, direction, outTile));
         }
+        // TODO
+        // if the player is on one of the shifted tiles
         // move the player
     }
 
