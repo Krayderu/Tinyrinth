@@ -207,6 +207,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sockets: 01000001
   rotation: 0
+  mobile: 1
 --- !u!1 &3050093527571480133
 GameObject:
   m_ObjectHideFlags: 0

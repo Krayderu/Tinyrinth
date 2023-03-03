@@ -4,26 +4,45 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private PassageTile currentTile;
-    private PassageTile startingTile;
-    private CustomGrid grid;
-    private PassageTile[] prefabs;
-    private PassageTile currentPrefab;
-    public Vector2 gridPos = new Vector2(0,0);
-    private bool isRotating = false;
+    //variables for playerState
+
+    private PassageTile currentTile;                //current position of the player
+    private PassageTile startingTile;               //Starting position of the player's movement
+    public Vector2 gridPos = new Vector2(0, 0);     //PlayerPos in datagrid
+
+    //variables to call other scripts
+
+    private CustomGrid grid;                        //grid element from CustomGrid Class
+    private PassageTile[] prefabs;                  //An array of tile prefabs
+
+    //Variables responsible for visual placement of Tiles
+
+    /*public PassageTile[] pickedPrefabs; */            //An array of corresponding tile with hover material 
+    private PassageTile currentPrefab;              //instanciated current game tile
+    /*private PassageTile currentPickedPrefab; */       //instanciated current hover tile
+    private PassageTile chosenPrefab;               //picked tile
+    private int prefabIndex;                        //Get the index from the RandomRange in PickPrefab()
+
+    //variable responsible for animation states
+    private bool isRotating = false;                //Animation condition
+    
+
 
     private void Start()
     {
-        //Setting the playerPos in the Grid
+        //Finding grid and setting the playerPos in the Grid
         grid = FindObjectOfType<CustomGrid>();
-        //grid = findGrid.GetComponent<CustomGrid>();
         PassageTile startingTile = grid.cells[0,0];
         currentTile = startingTile;
+
+        //Get the prefabs array from the GridGenerator script, pick a random prefab, and instantiate it
         GridGenerator generator = FindObjectOfType<GridGenerator>();
         prefabs = generator.prefabs;
-        var chosenPrefab = pickPrefab();
-        //Debug.Log(chosenPrefab);
+        chosenPrefab = PickPrefab();
         currentPrefab = Instantiate(chosenPrefab);
+
+        //Instantiate HoverPrefab
+        //currentPickedPrefab = Instantiate(HoverPrefab(prefabIndex));
         
     }
     private void Update()
@@ -31,6 +50,7 @@ public class PlayerController : MonoBehaviour
         var mousePos = GetMouseWorldPosition();
         Vector3 snapPos = grid.SnapToGrid(mousePos);
         currentPrefab.transform.position = snapPos;
+        //currentPickedPrefab.transform.position = snapPos;
 
         
         //Player Movement
@@ -39,13 +59,18 @@ public class PlayerController : MonoBehaviour
 
         }
 
-        if (Input.GetKey(KeyCode.R) && !isRotating){
+        if (Input.GetKeyUp(KeyCode.R) && !isRotating){
             // rotation asjadj euler machin
-            StartCoroutine(SpinAnimation());
+            StartCoroutine(SpinAnimation(currentPrefab));
+            //StartCoroutine(SpinAnimation(currentPickedPrefab));
+            //chosenPrefab.rotation = (chosenPrefab.rotation + 1) % 4;
             currentPrefab.rotation = (currentPrefab.rotation + 1) % 4;
+            //currentPickedPrefab.rotation = (currentPickedPrefab.rotation + 1) % 4;
+            //Debug.Log(chosenPrefab.rotation);
+            //Debug.Log(currentPickedPrefab.rotation);
         }
 
-        if (Input.GetMouseButtonDown(0)){
+        if (Input.GetMouseButtonUp(0)){
             //changer de tile pour current prefab
             //Debug.Log(grid.SnapToGrid(click));
 
@@ -55,42 +80,54 @@ public class PlayerController : MonoBehaviour
             // Vérifier qu'on peut construire
             if (!grid.IsPlaceable(gridCellPos) && !grid.isMoving) return;
 
-            //var newTile = Instantiate(currentPrefab, snapPos, currentPrefab.transform.rotation);
-
 
             // 1. trouver quelle colonne / ligne : row/columnIndex
             // Find shift direction
             Utils.Direction direction;
-            int index;
-            if (gridCellPos.x >= grid.rows){
-                direction = Utils.Direction.Down;
-                // shift column
-                index = gridCellPos.z;
-                grid.ShiftColumn(index, currentPrefab, direction);
+            if (!grid.isMoving)
+            {
+                int index;
+                if (gridCellPos.x >= grid.rows)
+                {
+                    direction = Utils.Direction.Down;
+                    // shift column
+                    index = gridCellPos.z;
+                    grid.ShiftColumn(index, currentPrefab, direction);
 
-            } else if (gridCellPos.x < 0){
-                direction = Utils.Direction.Up;
-                // shift column
-                index = gridCellPos.z;
-                grid.ShiftColumn(index, currentPrefab, direction);
+                }
+                else if (gridCellPos.x < 0)
+                {
+                    direction = Utils.Direction.Up;
+                    // shift column
+                    index = gridCellPos.z;
+                    grid.ShiftColumn(index, currentPrefab, direction);
+                }
+
+                if (gridCellPos.z >= grid.columns)
+                {
+                    direction = Utils.Direction.Right;
+                    // shift row
+                    index = gridCellPos.x;
+                    grid.ShiftRow(index, currentPrefab, direction);
+
+                }
+                else if (gridCellPos.z < 0)
+                {
+                    direction = Utils.Direction.Left;
+                    // shift row
+                    index = gridCellPos.x;
+                    grid.ShiftRow(index, currentPrefab, direction);
+                }
+                //Debug.Log(gridCellPos);
+
+                //Debug.Log(currentPrefab);
+                //Debug.Log(currentPickedPrefab);
+                chosenPrefab = PickPrefab();
+                currentPrefab = Instantiate(PickPrefab());
+                //currentPickedPrefab = Instantiate(HoverPrefab(prefabIndex));
+                //currentPickedPrefab.transform.position = snapPos;
+                currentPrefab.transform.position = snapPos;
             }
-
-            if (gridCellPos.z >= grid.columns){
-                direction = Utils.Direction.Right;
-                // shift row
-                index = gridCellPos.x;
-                grid.ShiftRow(index, currentPrefab, direction);
-
-            } else if (gridCellPos.z < 0){
-                direction = Utils.Direction.Left;
-                // shift row
-                index = gridCellPos.x;
-                grid.ShiftRow(index, currentPrefab, direction);
-            }
-            //Debug.Log(gridCellPos);
-
-            currentPrefab = Instantiate(pickPrefab());
-            currentPrefab.transform.position = snapPos;
 
         }
 
@@ -112,28 +149,39 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private PassageTile pickPrefab(){
+    //Picks a random tile in prefabs array
+    private PassageTile PickPrefab(){
+        //prefabIndex = Random.Range(0, prefabs.Length);
+        //PassageTile randomPrefab = prefabs[prefabIndex];
+        //return randomPrefab;
         return prefabs[Random.Range(0, prefabs.Length)];
     }
 
+    //Picks same tile in array HoverPrefabs as the tile to be instanciated
+    //private PassageTile HoverPrefab(int prefabI)
+    //{
+    //    PassageTile pickedTile = pickedPrefabs[prefabI];
+    //    return pickedTile;
+    //}
+
     
 
-    private IEnumerator SpinAnimation()
+    private IEnumerator SpinAnimation(PassageTile prefab)
     {
         isRotating = true;
         float duration = .1f;
         float elapsedTime = 0.0f;
-        Quaternion startRotation = currentPrefab.transform.rotation;
+        Quaternion startRotation = prefab.transform.rotation;
         Quaternion endRotation = startRotation * Quaternion.Euler(0, 90, 0);
 
         while (elapsedTime < duration)
         {
-            currentPrefab.transform.rotation = Quaternion.Slerp(startRotation, endRotation, elapsedTime / duration);
+            prefab.transform.rotation = Quaternion.Slerp(startRotation, endRotation, elapsedTime / duration);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        currentPrefab.transform.rotation = endRotation;
+        prefab.transform.rotation = endRotation;
         isRotating = false;
     }
 }

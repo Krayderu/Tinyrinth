@@ -287,7 +287,6 @@ public class CustomGrid : MonoBehaviour
     {
         isSpinning = true;
         float animDuration = .3f;
-        float spinMaxSpeed = 10f;
         Vector3 scale = Vector3.one;
         float rotation = 0f;
         float rotationSpeed = 0f;

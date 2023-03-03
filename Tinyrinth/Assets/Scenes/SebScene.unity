@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.3069224, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -201,7 +201,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 500935890}
   m_LocalRotation: {x: 0.34556115, y: 0.6169177, z: -0.34556115, w: 0.6169177}
-  m_LocalPosition: {x: -1.19, y: 6.81, z: 2.44}
+  m_LocalPosition: {x: -2.04, y: 6.81, z: 2.44}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -517,6 +517,29 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 9636cd34ce678c047b1f7a7ed2465eac, type: 2}
+    - target: {fileID: 3484550238185550547, guid: fd3ffa7ba90ac7e4e801f81c1087b198,
+        type: 3}
+      propertyPath: pickedPrefabs.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3484550238185550547, guid: fd3ffa7ba90ac7e4e801f81c1087b198,
+        type: 3}
+      propertyPath: pickedPrefabs.Array.data[0]
+      value: 
+      objectReference: {fileID: 8095008968336268821, guid: 66861cf2ed793e749a6f83c9120c14ef,
+        type: 3}
+    - target: {fileID: 3484550238185550547, guid: fd3ffa7ba90ac7e4e801f81c1087b198,
+        type: 3}
+      propertyPath: pickedPrefabs.Array.data[1]
+      value: 
+      objectReference: {fileID: 5328330581296672755, guid: bfcda96586334bf4caba3ab728d0bdc9,
+        type: 3}
+    - target: {fileID: 3484550238185550547, guid: fd3ffa7ba90ac7e4e801f81c1087b198,
+        type: 3}
+      propertyPath: pickedPrefabs.Array.data[2]
+      value: 
+      objectReference: {fileID: 5598494651926282287, guid: bdff865d1d3444b44b1c655a329dfe0f,
+        type: 3}
     - target: {fileID: 7136618678859131227, guid: fd3ffa7ba90ac7e4e801f81c1087b198,
         type: 3}
       propertyPath: m_Materials.Array.data[0]

@@ -18,7 +18,7 @@ public class GridGenerator : MonoBehaviour
     {
         GameObject gridObject = new GameObject("Grid");
         gridObject.AddComponent<CustomGrid>();
-        Undo.RegisterCreatedObjectUndo(gridObject, "Created Grid");
+        //Undo.RegisterCreatedObjectUndo(gridObject, "Created Grid");
 
         Vector3 startPosition = Vector3.zero;
         Vector3 currentPosition = startPosition;
@@ -28,7 +28,7 @@ public class GridGenerator : MonoBehaviour
             for (int column = 0; column < columns; column++)
             {
                 GameObject cell = new GameObject(row.ToString() + "," + column.ToString());
-                Undo.RegisterCreatedObjectUndo(cell, "Created Cell");
+                //Undo.RegisterCreatedObjectUndo(cell, "Created Cell");
 
                 cell.transform.position = currentPosition;
                 cell.transform.parent = gridObject.transform;
