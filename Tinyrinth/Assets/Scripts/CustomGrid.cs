@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class CustomGrid : MonoBehaviour
@@ -19,7 +20,6 @@ public class CustomGrid : MonoBehaviour
         player = FindObjectOfType<PlayerController>();
     }
 
-    
     public void InitializeGridData(int nRows, int nColumns, float size, float spacing)
     {
         rows = nRows;
@@ -31,7 +31,7 @@ public class CustomGrid : MonoBehaviour
 
     public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
         List<PassageTile> totalRow = GetRow(rowIndex);
-        // Shift the data
+        // Shift the tile
         PassageTile outTile = ShiftDataRow(rowIndex, replaceValue, direction);
 
         // Shift visually
@@ -53,7 +53,7 @@ public class CustomGrid : MonoBehaviour
 
     public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
         List<PassageTile> totalColumn = GetColumn(columnIndex);
-        // Shift the data
+        // Shift the tile
         PassageTile outTile = ShiftDataColumn(columnIndex, replaceValue, direction);
 
         // Shift visually
@@ -72,67 +72,78 @@ public class CustomGrid : MonoBehaviour
         }
     }
 
-    public void LightThePath(Vector3Int origin, PassageTile originTile){
-        // Get connected tiles
-        Queue<PassageTile> connectedTiles = new Queue<PassageTile>();
-        connectedTiles.Enqueue(originTile); //GetConnectedTiles(origin, originTile);
-        // TODO: recursively get all connected tiles
-
-        // Flood-fill (node):
-        // 1. Set Q to the empty queue or stack.
-        // 2. Add node to the end of Q.
-        // 3. While Q is not empty:
-        // 4.   Set n equal to the first element of Q.
-        // 5.   Remove first element from Q.
-        // 6.   If n is Inside:
-        //         Set the n
-        //         Add the node to the west of n to the end of Q.
-        //         Add the node to the east of n to the end of Q.
-        //         Add the node to the north of n to the end of Q.
-        //         Add the node to the south of n to the end of Q.
-        // 7. Continue looping until Q is exhausted.
-        // 8. Return.
-
-  
+    private void EnableAllLights(bool value){
+        foreach(var tile in GetAllTiles()){
+            tile.EnableLights(value);
+        }
     }
 
-    public List<PassageTile> GetConnectedTiles(Vector3Int cellpos, PassageTile data)
+    public void LightThePath(PassageTile originTile){
+        EnableAllLights(false);
+        // Flood-fill:
+        // 1. Set Q to the empty queue
+        Queue<PassageTile> connectedTiles = new Queue<PassageTile>();
+        
+        // 2. Add node to the end of Q.
+        connectedTiles.Enqueue(originTile); //GetConnectedTiles(origin, originTile);
+
+        // 3. While Q is not empty:
+        while (connectedTiles.Count > 0){
+            // 4.   Set n equal to the first element of Q.
+            // 5.   Remove first element from Q.
+            PassageTile tile = connectedTiles.Dequeue();
+            
+            if (!tile.lit){
+                // Light the tile
+                tile.EnableLights(true);
+                // Add all the tiles that are connected to this one to the queue
+                var connectedNeighbors = GetConnectedTiles(tile);
+                foreach (PassageTile connectedTile in connectedNeighbors){
+                    if (!connectedTile.lit){
+                        connectedTiles.Enqueue(connectedTile);
+                    }
+                }
+            }
+            // Continue looping until Q is exhausted.
+        }
+    }
+
+    public List<PassageTile> GetConnectedTiles(PassageTile tile)
     {
         // check that the tile can connect to another tile
         List<PassageTile> connections = new List<PassageTile>();
+        Vector3Int cellPos = GetGridCellPosition(tile.gameObject.transform.position);
 
         //liste des cases voisines
         Vector3Int[] neighbors = new Vector3Int[]
         {
             new Vector3Int(1,0,0), //Up
-            new Vector3Int(0,0,1), //Left
-            new Vector3Int(-1,0,0), //Down
             new Vector3Int(0,0,-1), //Right
+            new Vector3Int(-1,0,0), //Down
+            new Vector3Int(0,0,1), //Left
         };
         // liste des connections
         int[] connectionIndices = new int[]
         {
             2,//Up -> Down
-            1,//Left -> Right
-            0,//Down -> Up
             3,//Right -> Left
+            0,//Down -> Up
+            1,//Left -> Right
         };
 
         for (int i = 0; i < neighbors.Length; i++)
         {
-            Vector3Int neighborPos = cellpos + neighbors[i];
-            PassageTile neighborTile = getTile(neighborPos.x, neighborPos.z);
+            Vector3Int neighborPos = cellPos + neighbors[i];
+            PassageTile neighborTile = GetTile(neighborPos);
 
-            if (neighborTile == null)
-            {
-                continue;
-            }
+            if (neighborTile == null) continue;
 
-            bool[] neighborConnections = neighborTile.sockets.ToArray();
+            bool[] neighborSockets = neighborTile.sockets.ToArray();
 
-            int neighborIndex = (i + neighborTile.rotation) % 4;
-            int selfIndex = (i + data.rotation) % 4;
-            if(neighborConnections[connectionIndices[neighborIndex]] && data.sockets[selfIndex])
+            int neighborIndex = connectionIndices[(i - neighborTile.rotation + 4) % 4];
+            int selfIndex = (i - tile.rotation + 4) % 4;
+
+            if(neighborSockets[neighborIndex] && tile.sockets[selfIndex])
             {
                 connections.Add(neighborTile);
             }
@@ -142,19 +153,6 @@ public class CustomGrid : MonoBehaviour
     }
 
     #region Utils
-    public PassageTile getTile(int x,int y)
-    {
-        //x = row y = column
-        if (cells[x, y] is PassageTile)
-        {
-            return cells[x,y];
-        }
-        else
-        {
-            return null;
-        }
-    }
-
     public bool IsWithinBounds(Vector3Int pos)
     {
        return (pos.x >= 0 && pos.x < cells.GetLength(0)) && (pos.z >= 0 && pos.z < cells.GetLength(1));
@@ -209,6 +207,30 @@ public class CustomGrid : MonoBehaviour
     #endregion
 
     #region ArrayOperations
+
+    public PassageTile GetTile(Vector3Int pos)
+    {
+        PassageTile tile;
+        //x = row z = column
+        try {
+            tile = cells[pos.x, pos.z];
+        } catch(Exception ex)
+        {
+            tile = null;
+        }
+        return tile;
+    }
+
+
+    public List<PassageTile> GetAllTiles(){
+        List<PassageTile> allTiles = new List<PassageTile>();
+        for (int row = 0; row < rows; row++){
+            for (int column = 0; column < columns; column++){
+                allTiles.Add(cells[row, column]);
+            }
+        }
+        return allTiles;
+    }
 
     private List<PassageTile> GetRow(int rowIndex){
         List<PassageTile> totalRow = new List<PassageTile>();
@@ -364,6 +386,9 @@ public class CustomGrid : MonoBehaviour
         }
         
         Destroy(outTile.gameObject);
+
+        Vector3Int playerPos = GetGridCellPosition(player.gameObject.transform.position);
+        LightThePath(GetTile(playerPos));
 
         isSpinning = false;
     }
