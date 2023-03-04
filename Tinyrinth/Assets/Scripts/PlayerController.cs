@@ -5,6 +5,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     //variables for playerState
+    private CharacterController controller;
+    [SerializeField] private float movementSpeed = 1f;
 
     private PassageTile currentTile;                //current position of the player
     private PassageTile startingTile;               //Starting position of the player's movement
@@ -25,10 +27,6 @@ public class PlayerController : MonoBehaviour
 
     //variable responsible for animation states
     private bool isRotating = false;                //Animation condition
-
-    private CharacterController controller;
-    [SerializeField] private float movementSpeed = 0.05f;
-    
 
 
     private void Start()
@@ -52,6 +50,7 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         
     }
+
     private void Update()
     {
         Vector3 movementDirection = Vector3.zero;
@@ -89,6 +88,7 @@ public class PlayerController : MonoBehaviour
         #endregion
 
         #region GridInteractions
+        // show a different version of the cursor when can't build
         // if mousePos is inside the grid, hide the cursor
         var gridCellPos = grid.GetGridCellPosition(mousePos);
         bool isInBounds = grid.IsWithinBounds(gridCellPos);
@@ -96,21 +96,21 @@ public class PlayerController : MonoBehaviour
 
         // Show wireframe or actual tile ?
         if (isInBounds){
+            // in bounds: show none
             currentPickedPrefab.gameObject.SetActive(false);
             currentPrefab.gameObject.SetActive(false);
         } else {
             if ( !isPlaceable || grid.isMoving) {
-                // can't build
+                // can't build: show wireframe
                 currentPickedPrefab.gameObject.SetActive(true);
                 currentPrefab.gameObject.SetActive(false);
             } else {
-                // can build
+                // can build: show tile
                 currentPrefab.gameObject.SetActive(true);
                 currentPickedPrefab.gameObject.SetActive(false);
             }
         }
         
-        // TODO: show a different version of the cursor when can't build
         currentPrefab.transform.position = snapPos;
         currentPickedPrefab.transform.position = snapPos;
 
@@ -132,7 +132,7 @@ public class PlayerController : MonoBehaviour
             // Find shift direction and shift row/column according to insertion place
             Utils.Direction direction;
             int index;
-            
+
             if (gridCellPos.x >= grid.rows)
             {
                 direction = Utils.Direction.Down;
@@ -179,6 +179,7 @@ public class PlayerController : MonoBehaviour
         #endregion
     }
 
+    #region Utils
     public Vector3 GetMouseWorldPosition()
     {
         // Get the position on the tilemap that the mouse is pointing to
@@ -198,13 +199,11 @@ public class PlayerController : MonoBehaviour
     //Picks a random tile in prefabs array
     private PassageTile PickPrefab(){
         prefabIndex = Random.Range(0, prefabs.Length);
-        //PassageTile randomPrefab = prefabs[prefabIndex];
-        //return randomPrefab;
         return prefabs[prefabIndex];
     }
+    #endregion
 
-    
-
+    #region Animations
     private IEnumerator SpinAnimation(PassageTile prefab)
     {
         isRotating = true;
@@ -223,4 +222,5 @@ public class PlayerController : MonoBehaviour
         prefab.transform.rotation = endRotation;
         isRotating = false;
     }
+    #endregion
 }

@@ -19,6 +19,7 @@ public class CustomGrid : MonoBehaviour
         player = FindObjectOfType<PlayerController>();
     }
 
+    
     public void InitializeGridData(int nRows, int nColumns, float size, float spacing)
     {
         rows = nRows;
@@ -26,120 +27,6 @@ public class CustomGrid : MonoBehaviour
         cells = new PassageTile[nRows, nColumns];
         cellSize = size;
         cellSpacing = spacing;
-    }
-
-    public PassageTile getTile(int x,int y)
-    {
-        //x = row y = column
-        if (cells[x, y] is PassageTile)
-        {
-            return cells[x,y];
-        }
-        else
-        {
-            return null;
-        }
-    }
-
-    public bool IsWithinBounds(Vector3Int pos)
-    {
-       return (pos.x >= 0 && pos.x < cells.GetLength(0)) && (pos.z >= 0 && pos.z < cells.GetLength(1));
-    }
-
-    public bool IsPlaceable(Vector3Int position)
-    {
-        int x = position.x;
-        int y = position.z;
-
-        return (
-            (((x == rows || x == -1) && !(y <= -1 || y >= columns)) ||
-            ((y == columns || y == -1) && !(x <= -1 || x >= rows)))
-        );
-    }
-
-    public bool IsTileConnected(Vector3Int cellpos, PassageTile data, int rotation)
-    {
-        // check that the tile can connect to another tile
-        bool canConnect = false;
-
-        //liste des cases voisines
-        Vector3Int[] neighbors = new Vector3Int[]
-        {
-            new Vector3Int(0,0,1), //Up
-            new Vector3Int(1,0,0), //Left
-            new Vector3Int(0,0,-1), //Down
-            new Vector3Int(-1,0,0), //Right
-        };
-        // liste des connections
-        int[] connectionIndices = new int[]
-        {
-            2,//Up -> Down
-            1,//Left -> Right
-            0,//Down -> Up
-            3,//Right -> Left
-        };
-
-        for (int i = 0; i < neighbors.Length; i++)
-        {
-            Vector3Int neighborPos = cellpos + neighbors[i];
-            int neighborX = neighborPos.x;
-            int neighborY = neighborPos.z;
-            PassageTile neighborTile = getTile(neighborX,neighborY);
-
-            if (neighborTile == null)
-            {
-                continue;
-            }
-
-            bool[] neighborConnections = neighborTile.sockets.ToArray();
-
-            int neighborIndex = (i + neighborTile.rotation) % 4;
-            int selfIndex = (i + rotation) % 4;
-            if(neighborConnections[connectionIndices[neighborIndex]] && data.sockets[selfIndex])
-            {
-                canConnect = true;
-                break;
-            }
-        }
-        if (!canConnect) return false;
-
-        return true;
-    }
-
-    public Vector3Int GetGridCellPosition(Vector3 position)
-    {
-        int x = Mathf.RoundToInt(position.x / gridSize);
-        int y = Mathf.RoundToInt(position.z / gridSize);
-
-        // Get the closest cell position on the grid
-        Vector3Int cellPos = new Vector3Int(x, 0, y);
-
-        return cellPos;
-    }
-
-    // public Vector3 CellToWorld(Vector3Int pos){
-    //     return new Vector3(pos.x * (cellSize + cellSpacing), 0, pos.z * (cellSize + cellSpacing));
-    // }
-
-
-    public Vector3 SnapToGrid(Vector3 position)
-    {
-        int x = Mathf.RoundToInt(position.x / gridSize);
-        int y = Mathf.RoundToInt(position.z / gridSize);
-
-        // Get the closest cell position on the grid
-        Vector3Int cellPos = new Vector3Int(x, 0, y);
-
-        // Get the world position of the center of the closest cell on the grid
-        //Vector3 gridPos = cells[cellPos.x, cellPos.z].transform.position;
-        float gridX = x * (cellSize + cellSpacing);
-        float gridY = y * (cellSize + cellSpacing);
-        Vector3 gridPos = new Vector3(gridX, 0, gridY);
-
-        // Adjust the y-coordinate of the snapped position to match the original position
-        //gridPos.y = position.y;
-
-        return gridPos;
     }
 
     public void ShiftRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction){
@@ -185,9 +72,129 @@ public class CustomGrid : MonoBehaviour
         }
     }
 
+    public void LightThePath(Vector3Int origin, PassageTile originTile){
+        // Get connected tiles
+        List<PassageTile> connectedTiles = new List<PassageTile>();
+        connectedTiles += GetConnectedTiles(origin, originTile);
+        // TODO: recursively get all connected tiles
+  
+    }
+
+    public List<PassageTile> GetConnectedTiles(Vector3Int cellpos, PassageTile data)
+    {
+        // check that the tile can connect to another tile
+        List<PassageTile> connections = new List<PassageTile>();
+
+        //liste des cases voisines
+        Vector3Int[] neighbors = new Vector3Int[]
+        {
+            new Vector3Int(1,0,0), //Up
+            new Vector3Int(0,0,1), //Left
+            new Vector3Int(-1,0,0), //Down
+            new Vector3Int(0,0,-1), //Right
+        };
+        // liste des connections
+        int[] connectionIndices = new int[]
+        {
+            2,//Up -> Down
+            1,//Left -> Right
+            0,//Down -> Up
+            3,//Right -> Left
+        };
+
+        for (int i = 0; i < neighbors.Length; i++)
+        {
+            Vector3Int neighborPos = cellpos + neighbors[i];
+            PassageTile neighborTile = getTile(neighborPos.x, neighborPos.z);
+
+            if (neighborTile == null)
+            {
+                continue;
+            }
+
+            bool[] neighborConnections = neighborTile.sockets.ToArray();
+
+            int neighborIndex = (i + neighborTile.rotation) % 4;
+            int selfIndex = (i + data.rotation) % 4;
+            if(neighborConnections[connectionIndices[neighborIndex]] && data.sockets[selfIndex])
+            {
+                connections.Add(neighBorTile)
+            }
+        }
+
+        return connections;
+    }
+
+    #region Utils
+    public PassageTile getTile(int x,int y)
+    {
+        //x = row y = column
+        if (cells[x, y] is PassageTile)
+        {
+            return cells[x,y];
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public bool IsWithinBounds(Vector3Int pos)
+    {
+       return (pos.x >= 0 && pos.x < cells.GetLength(0)) && (pos.z >= 0 && pos.z < cells.GetLength(1));
+    }
+
+    public bool IsPlaceable(Vector3Int position)
+    {
+        int x = position.x;
+        int y = position.z;
+
+        return (
+            (((x == rows || x == -1) && !(y <= -1 || y >= columns)) ||
+            ((y == columns || y == -1) && !(x <= -1 || x >= rows)))
+        );
+    }
+
+    public Vector3Int GetGridCellPosition(Vector3 position)
+    {
+        int x = Mathf.RoundToInt(position.x / gridSize);
+        int y = Mathf.RoundToInt(position.z / gridSize);
+
+        // Get the closest cell position on the grid
+        Vector3Int cellPos = new Vector3Int(x, 0, y);
+
+        return cellPos;
+    }
+
+    // public Vector3 CellToWorld(Vector3Int pos){
+    //     return new Vector3(pos.x * (cellSize + cellSpacing), 0, pos.z * (cellSize + cellSpacing));
+    // }
+
+
+    public Vector3 SnapToGrid(Vector3 position)
+    {
+        int x = Mathf.RoundToInt(position.x / gridSize);
+        int y = Mathf.RoundToInt(position.z / gridSize);
+
+        // Get the closest cell position on the grid
+        Vector3Int cellPos = new Vector3Int(x, 0, y);
+
+        // Get the world position of the center of the closest cell on the grid
+        //Vector3 gridPos = cells[cellPos.x, cellPos.z].transform.position;
+        float gridX = x * (cellSize + cellSpacing);
+        float gridY = y * (cellSize + cellSpacing);
+        Vector3 gridPos = new Vector3(gridX, 0, gridY);
+
+        // Adjust the y-coordinate of the snapped position to match the original position
+        //gridPos.y = position.y;
+
+        return gridPos;
+    }
+    #endregion
+
     #region ArrayOperations
 
-    public List<PassageTile> GetRow(int rowIndex){
+    private List<PassageTile> GetRow(int rowIndex){
         List<PassageTile> totalRow = new List<PassageTile>();
         for (int i = 0; i < rows; i++){
             totalRow.Add(cells[i, rowIndex]);
@@ -195,7 +202,7 @@ public class CustomGrid : MonoBehaviour
         return totalRow;
     }
 
-    public List<PassageTile> GetColumn(int columnIndex){
+    private List<PassageTile> GetColumn(int columnIndex){
         List<PassageTile> totalColumn = new List<PassageTile>();
         for (int i = 0; i < columns; i++){
             totalColumn.Add(cells[columnIndex, i]);
