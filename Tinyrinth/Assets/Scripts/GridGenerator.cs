@@ -36,13 +36,21 @@ public class GridGenerator : MonoBehaviour
 
                 // Instantiate random prefab tile with given position and rotation
                 PassageTile prefab = prefabs[Random.Range(0, prefabs.Length)];
-                PassageTile instance = Instantiate(prefab, position, Quaternion.Euler(0, rotation * 90, 0));
+                PassageTile instance = Instantiate(prefab);
 
                 instance.rotation = rotation; // set rotation data
+                instance.transform.rotation = Quaternion.Euler(0, rotation * 90, 0); // set visual rotation
+
+                instance.transform.position = position; // set position
                 instance.transform.parent = grid.transform; // set as child of Grid
+                instance.EnableLights(false);
 
                 grid.cells[row, column] = instance; // add to cell list
             }
         }
+
+        var player = FindObjectOfType<PlayerController>();
+        Vector3Int playerPos = grid.GetGridCellPosition(player.gameObject.transform.position);
+        grid.LightThePath(grid.GetTile(playerPos));
     }
 }

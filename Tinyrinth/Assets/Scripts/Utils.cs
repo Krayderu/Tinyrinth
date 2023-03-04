@@ -11,5 +11,4 @@ public static class Utils : object
         Up,
         Down
     }
-
 }
