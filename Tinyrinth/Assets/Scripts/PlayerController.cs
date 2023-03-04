@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour
     private bool isRotating = false;                //Animation condition
     private bool isMoving = false;
 
-    private Vector3 lastMovementDirection = Vector3.up;
+    private Vector3 lastMovementDirection = Vector3.right;
 
 
     private void Start()
