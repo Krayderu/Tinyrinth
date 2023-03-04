@@ -7,8 +7,8 @@ public class CustomGrid : MonoBehaviour
 {
 
     public PassageTile[,] cells;
-    private float cellSpacing = 0f;
-    private float cellSize = 0f;
+    public float cellSpacing = 0f;
+    public float cellSize = 0f;
     public float gridSize = 1f;
     public int rows;
     public int columns;
@@ -150,6 +150,48 @@ public class CustomGrid : MonoBehaviour
         }
 
         return connections;
+    }
+
+    public bool CanMove(Vector3Int start, Vector3Int end){
+        PassageTile startTile = GetTile(start);
+        PassageTile endTile = GetTile(end);
+        Vector3Int directionVector = end - start;
+        int directionIndex = 0;
+
+        if (startTile == null || endTile == null) return false;
+
+        if (directionVector.magnitude != 1){
+            Debug.Log("Distance > 1");
+            return false;
+        }
+
+        int[] connectionIndices = new int[]
+        {
+            2,//Up -> Down
+            3,//Right -> Left
+            0,//Down -> Up
+            1,//Left -> Right
+        };
+
+        if (directionVector == new Vector3(1, 0, 0)){ // up
+            directionIndex = 0;
+        }
+        if (directionVector == new Vector3(-1, 0, 0)){ // down
+            directionIndex = 2;
+        }
+        if (directionVector == new Vector3(0, 0, 1)){ // left
+            directionIndex = 3;
+        }
+        if (directionVector == new Vector3(0, 0, -1)){ // right
+            directionIndex = 1;
+        }
+
+        bool[] neighborSockets = endTile.sockets.ToArray();
+
+        int neighborIndex = connectionIndices[(directionIndex - endTile.rotation + 4) % 4];
+        int selfIndex = (directionIndex - startTile.rotation + 4) % 4;
+
+        return (neighborSockets[neighborIndex] && startTile.sockets[selfIndex]);
     }
 
     #region Utils
@@ -337,7 +379,7 @@ public class CustomGrid : MonoBehaviour
 
         t = 0f;
         startPosition = obj.transform.position;
-        endPosition = startPosition + (directionVector * moveDistance);
+        endPosition = startPosition + directionVector * moveDistance;
         while (t < moveDuration /3)
         {
             t += Time.deltaTime;

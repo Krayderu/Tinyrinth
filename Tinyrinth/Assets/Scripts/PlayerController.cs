@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     //variables for playerState
-    private CharacterController controller;
+    //private CharacterController controller;
     [SerializeField] private float movementSpeed = 1f;
 
     private PassageTile currentTile;                //current position of the player
@@ -27,6 +27,9 @@ public class PlayerController : MonoBehaviour
 
     //variable responsible for animation states
     private bool isRotating = false;                //Animation condition
+    private bool isMoving = false;
+
+    private Vector3 lastMovementDirection = Vector3.up;
 
 
     private void Start()
@@ -47,7 +50,7 @@ public class PlayerController : MonoBehaviour
         //Instantiate HoverPrefab
         currentPickedPrefab = Instantiate(pickedPrefabs[prefabIndex]);
         
-        controller = GetComponent<CharacterController>();
+        //controller = GetComponent<CharacterController>();
         
     }
 
@@ -60,31 +63,31 @@ public class PlayerController : MonoBehaviour
         #region PlayerMovement
         if (Input.GetKey(KeyCode.W))
         {
-            movementDirection += new Vector3(1, 0, 0);
+            movementDirection = new Vector3(1, 0, 0);
         }
         if (Input.GetKey(KeyCode.S))
         {
-            movementDirection += new Vector3(-1, 0, 0);
+            movementDirection = new Vector3(-1, 0, 0);
         }
         if (Input.GetKey(KeyCode.A))
         {
-            movementDirection += new Vector3(0, 0, 1);
+            movementDirection = new Vector3(0, 0, 1);
         }
         if (Input.GetKey(KeyCode.D))
         {
-            movementDirection += new Vector3(0, 0, -1);
+            movementDirection = new Vector3(0, 0, -1);
         }
-        movementDirection.Normalize();
-    
+        Vector3 startPosition = transform.position;
+        Vector3 endPosition = transform.position + movementDirection * (grid.cellSize + grid.cellSpacing);
         // move character
-        if (!grid.isMoving){
-            controller.Move(movementDirection * movementSpeed * Time.deltaTime);
-            // rotate in direction of movement
-            if (movementDirection != Vector3.zero){
-                //transform.rotation = Quaternion.LookRotation(movementDirection);
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation (movementDirection), Time.deltaTime * 10f);
+        if (!grid.isMoving && !isMoving && movementDirection != Vector3.zero){
+            lastMovementDirection = movementDirection;
+            if (grid.CanMove(grid.GetGridCellPosition(startPosition), grid.GetGridCellPosition(endPosition))){
+                StartCoroutine(Move(startPosition, endPosition));
             }
         }
+        
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lastMovementDirection), Time.deltaTime * 10f);
         #endregion
 
         #region GridInteractions
@@ -210,19 +213,34 @@ public class PlayerController : MonoBehaviour
     {
         isRotating = true;
         float duration = .1f;
-        float elapsedTime = 0.0f;
+        float t = 0.0f;
         Quaternion startRotation = prefab.transform.rotation;
         Quaternion endRotation = startRotation * Quaternion.Euler(0, 90, 0);
 
-        while (elapsedTime < duration)
+        while (t < duration)
         {
-            prefab.transform.rotation = Quaternion.Slerp(startRotation, endRotation, elapsedTime / duration);
-            elapsedTime += Time.deltaTime;
+            prefab.transform.rotation = Quaternion.Slerp(startRotation, endRotation, t / duration);
+            t += Time.deltaTime;
             yield return null;
         }
 
         prefab.transform.rotation = endRotation;
         isRotating = false;
+    }
+
+    private IEnumerator Move(Vector3 start, Vector3 end){
+        isMoving = true;
+        float duration = .2f;
+        float t = 0.0f;
+
+        while (t < duration){
+            transform.position = Vector3.Lerp(start, end, t / duration);
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = end;
+        isMoving = false;
     }
     #endregion
 }
