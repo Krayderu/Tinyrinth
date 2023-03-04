@@ -74,9 +74,25 @@ public class CustomGrid : MonoBehaviour
 
     public void LightThePath(Vector3Int origin, PassageTile originTile){
         // Get connected tiles
-        List<PassageTile> connectedTiles = new List<PassageTile>();
-        connectedTiles = GetConnectedTiles(origin, originTile);
+        Queue<PassageTile> connectedTiles = new Queue<PassageTile>();
+        connectedTiles.Enqueue(originTile); //GetConnectedTiles(origin, originTile);
         // TODO: recursively get all connected tiles
+
+        // Flood-fill (node):
+        // 1. Set Q to the empty queue or stack.
+        // 2. Add node to the end of Q.
+        // 3. While Q is not empty:
+        // 4.   Set n equal to the first element of Q.
+        // 5.   Remove first element from Q.
+        // 6.   If n is Inside:
+        //         Set the n
+        //         Add the node to the west of n to the end of Q.
+        //         Add the node to the east of n to the end of Q.
+        //         Add the node to the north of n to the end of Q.
+        //         Add the node to the south of n to the end of Q.
+        // 7. Continue looping until Q is exhausted.
+        // 8. Return.
+
   
     }
 
@@ -196,71 +212,68 @@ public class CustomGrid : MonoBehaviour
 
     private List<PassageTile> GetRow(int rowIndex){
         List<PassageTile> totalRow = new List<PassageTile>();
-        for (int i = 0; i < rows; i++){
-            totalRow.Add(cells[i, rowIndex]);
+        for (int i = 0; i < columns; i++){
+            totalRow.Add(cells[rowIndex, i]);
         }
         return totalRow;
     }
 
     private List<PassageTile> GetColumn(int columnIndex){
         List<PassageTile> totalColumn = new List<PassageTile>();
-        for (int i = 0; i < columns; i++){
-            totalColumn.Add(cells[columnIndex, i]);
+        for (int i = 0; i < rows; i++){
+            totalColumn.Add(cells[i, columnIndex]);
         }
         return totalColumn;
     }
 
     private PassageTile ShiftDataRow(int rowIndex, PassageTile replaceValue, Utils.Direction direction)
     {
-        PassageTile lastValue = cells[direction == Utils.Direction.Left ? cells.GetLength(1) - 1 : 0, rowIndex];
+        PassageTile lastValue = cells[rowIndex, direction == Utils.Direction.Left ? cells.GetLength(1) - 1 : 0];
 
         if (direction == Utils.Direction.Left)
         {
             for (int j = cells.GetLength(1) - 1; j > 0; j--)
             {
-                cells[j, rowIndex] = cells[j - 1, rowIndex];
+                cells[rowIndex, j] = cells[rowIndex, j - 1];
             }
-            cells[0, rowIndex] = replaceValue;
+            cells[rowIndex, 0] = replaceValue;
         }
         else if (direction == Utils.Direction.Right)
         {
             for (int j = 0; j < cells.GetLength(1) - 1; j++)
             {
-                cells[j, rowIndex] = cells[j + 1, rowIndex];
+                cells[rowIndex, j] = cells[rowIndex, j + 1];
             }
-            cells[cells.GetLength(1) - 1, rowIndex] = replaceValue;
+            cells[rowIndex, cells.GetLength(1) - 1] = replaceValue;
         }
         return lastValue;
     }
 
     private PassageTile ShiftDataColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction)
     {
-        PassageTile lastValue = cells[columnIndex, direction == Utils.Direction.Up ? cells.GetLength(0) - 1 : 0];
+        PassageTile lastValue = cells[direction == Utils.Direction.Up ? cells.GetLength(0) - 1 : 0, columnIndex];
 
         if (direction == Utils.Direction.Up)
         {
             for (int i = cells.GetLength(0) - 1; i > 0; i--)
             {
-                cells[columnIndex, i] = cells[columnIndex, i - 1];
+                cells[i, columnIndex] = cells[i - 1, columnIndex];
             }
-            cells[columnIndex, 0] = replaceValue;
+            cells[0, columnIndex] = replaceValue;
         }
         else if (direction == Utils.Direction.Down)
         {
             for (int i = 0; i < cells.GetLength(0) - 1; i++)
             {
-                cells[columnIndex, i] = cells[columnIndex, i + 1];
+                cells[i, columnIndex] = cells[i + 1, columnIndex];
             }
-            cells[columnIndex, cells.GetLength(0) - 1] = replaceValue;
+            cells[cells.GetLength(0) - 1, columnIndex] = replaceValue;
         }
         return lastValue;
     }
     #endregion
 
     #region Animations
-
-    //private List<GameObject> TilesInRow = new List<GameObject>();
-    //private List<PassageTile> TilesInColumn = new List<PassageTile>();
 
     IEnumerator ShiftAnimation(MonoBehaviour obj, Utils.Direction direction, PassageTile outTile)
     {
