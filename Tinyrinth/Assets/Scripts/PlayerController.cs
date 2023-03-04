@@ -165,6 +165,8 @@ public class PlayerController : MonoBehaviour
                 grid.ShiftRow(index, currentPrefab, direction);
             }
 
+            currentPrefab.transform.parent = grid.transform; // set as child of Grid
+
             // Here, we place the currentPrefab by stopping to move it:
             // we choose a new prefab to replace the currentPrefab.
             chosenPrefab = PickPrefab();
