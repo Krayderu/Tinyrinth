@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 3d9862acb370b8c4e9cdc661df02b0b1
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Moon Light
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: aa0350a656dbfe040a4a0c47b91bcd2c, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
