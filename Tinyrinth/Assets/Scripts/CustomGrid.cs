@@ -75,7 +75,7 @@ public class CustomGrid : MonoBehaviour
     public void LightThePath(Vector3Int origin, PassageTile originTile){
         // Get connected tiles
         List<PassageTile> connectedTiles = new List<PassageTile>();
-        connectedTiles += GetConnectedTiles(origin, originTile);
+        connectedTiles = GetConnectedTiles(origin, originTile);
         // TODO: recursively get all connected tiles
   
     }
@@ -118,7 +118,7 @@ public class CustomGrid : MonoBehaviour
             int selfIndex = (i + data.rotation) % 4;
             if(neighborConnections[connectionIndices[neighborIndex]] && data.sockets[selfIndex])
             {
-                connections.Add(neighBorTile)
+                connections.Add(neighborTile);
             }
         }
 
