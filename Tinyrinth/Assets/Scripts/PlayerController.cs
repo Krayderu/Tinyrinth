@@ -17,9 +17,9 @@ public class PlayerController : MonoBehaviour
 
     //Variables responsible for visual placement of Tiles
 
-    /*public PassageTile[] pickedPrefabs; */            //An array of corresponding tile with hover material 
+    public PassageTile[] pickedPrefabs;             //An array of corresponding tile with hover material 
     private PassageTile currentPrefab;              //instanciated current game tile
-    /*private PassageTile currentPickedPrefab; */       //instanciated current hover tile
+    private PassageTile currentPickedPrefab;        //instanciated current hover tile
     private PassageTile chosenPrefab;               //picked tile
     private int prefabIndex;                        //Get the index from the RandomRange in PickPrefab()
 
@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
         currentPrefab = Instantiate(chosenPrefab);
 
         //Instantiate HoverPrefab
-        //currentPickedPrefab = Instantiate(HoverPrefab(prefabIndex));
+        currentPickedPrefab = Instantiate(pickedPrefabs[prefabIndex]);
         
         controller = GetComponent<CharacterController>();
         
@@ -89,43 +89,50 @@ public class PlayerController : MonoBehaviour
         #endregion
 
         #region GridInteractions
-        // TODO: if mousePos is inside the grid, hide the cursor
-        bool isInBounds = !grid.IsWithinBounds(grid.GetGridCellPosition(mousePos));
-        currentPrefab.gameObject.SetActive(isInBounds);
+        // if mousePos is inside the grid, hide the cursor
+        var gridCellPos = grid.GetGridCellPosition(mousePos);
+        bool isInBounds = grid.IsWithinBounds(gridCellPos);
+        bool isPlaceable = grid.IsPlaceable(gridCellPos);
+
+        // Show wireframe or actual tile ?
+        if (isInBounds){
+            currentPickedPrefab.gameObject.SetActive(false);
+            currentPrefab.gameObject.SetActive(false);
+        } else {
+            if ( !isPlaceable || grid.isMoving) {
+                // can't build
+                currentPickedPrefab.gameObject.SetActive(true);
+                currentPrefab.gameObject.SetActive(false);
+            } else {
+                // can build
+                currentPrefab.gameObject.SetActive(true);
+                currentPickedPrefab.gameObject.SetActive(false);
+            }
+        }
         
         // TODO: show a different version of the cursor when can't build
         currentPrefab.transform.position = snapPos;
-        //currentPickedPrefab.transform.position = snapPos;
+        currentPickedPrefab.transform.position = snapPos;
 
         // ROTATE PIECE
         if (Input.GetKeyUp(KeyCode.R) && !isRotating){
             // rotate visually
             StartCoroutine(SpinAnimation(currentPrefab));
-            //StartCoroutine(SpinAnimation(currentPickedPrefab));
-            //chosenPrefab.rotation = (chosenPrefab.rotation + 1) % 4;
+            StartCoroutine(SpinAnimation(currentPickedPrefab));
 
             // rotate data
             currentPrefab.rotation = (currentPrefab.rotation + 1) % 4;
-            //currentPickedPrefab.rotation = (currentPickedPrefab.rotation + 1) % 4;
-            //Debug.Log(chosenPrefab.rotation);
-            //Debug.Log(currentPickedPrefab.rotation);
         }
 
         // PLACE PIECE
         if (Input.GetMouseButtonUp(0)){
-            //changer de tile pour current prefab
-            //Debug.Log(grid.SnapToGrid(click));
-
-            Vector3Int gridCellPos = grid.GetGridCellPosition(snapPos);
-
             // Verify we can build and the grid is not moving
             if (!grid.IsPlaceable(gridCellPos) || grid.isMoving) return;
 
-
             // Find shift direction and shift row/column according to insertion place
             Utils.Direction direction;
-
             int index;
+            
             if (gridCellPos.x >= grid.rows)
             {
                 direction = Utils.Direction.Down;
@@ -162,8 +169,11 @@ public class PlayerController : MonoBehaviour
             // we choose a new prefab to replace the currentPrefab.
             chosenPrefab = PickPrefab();
             currentPrefab = Instantiate(PickPrefab());
-            //currentPickedPrefab = Instantiate(HoverPrefab(prefabIndex));
-            //currentPickedPrefab.transform.position = snapPos;
+
+            Destroy(currentPickedPrefab.gameObject);
+            currentPickedPrefab = Instantiate(pickedPrefabs[prefabIndex]);
+
+            currentPickedPrefab.transform.position = snapPos;
             currentPrefab.transform.position = snapPos;
         }
         #endregion
@@ -187,10 +197,10 @@ public class PlayerController : MonoBehaviour
 
     //Picks a random tile in prefabs array
     private PassageTile PickPrefab(){
-        //prefabIndex = Random.Range(0, prefabs.Length);
+        prefabIndex = Random.Range(0, prefabs.Length);
         //PassageTile randomPrefab = prefabs[prefabIndex];
         //return randomPrefab;
-        return prefabs[Random.Range(0, prefabs.Length)];
+        return prefabs[prefabIndex];
     }
 
     
