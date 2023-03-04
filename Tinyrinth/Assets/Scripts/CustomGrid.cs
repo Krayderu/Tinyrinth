@@ -80,7 +80,7 @@ public class CustomGrid : MonoBehaviour
 
     public void LightThePath(PassageTile originTile){
         EnableAllLights(false);
-        // Flood-fill:
+        // Flood-fill: Queue-based recursive implementation
         // 1. Set Q to the empty queue
         Queue<PassageTile> connectedTiles = new Queue<PassageTile>();
         
