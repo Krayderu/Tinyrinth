@@ -11,17 +11,20 @@ public class GridGenerator : MonoBehaviour
     float cellSize = 1.0f; // Taille de chaque cellule de la grille
     public float cellSpacing = 0.2f; // Espacement entre les cellules de la grille
     public PassageTile[] prefabs; // Liste de prefabs a assigner aleatoirement aux cellules
+    public Enemy[] enemies;
+
+    private CustomGrid grid;
 
 
     void Awake()
     {
+        GameObject gridObject = new GameObject("Grid");
+        grid = gridObject.AddComponent<CustomGrid>();
         GenerateGrid();
     }
 
     void GenerateGrid()
     {
-        GameObject gridObject = new GameObject("Grid");
-        CustomGrid grid = gridObject.AddComponent<CustomGrid>();
 
         grid.InitializeGridData(rows, columns, cellSize, cellSpacing);
 
@@ -49,8 +52,24 @@ public class GridGenerator : MonoBehaviour
             }
         }
 
+        AddEnemies();
+
         var player = FindObjectOfType<PlayerController>();
         Vector3Int playerPos = grid.GetGridCellPosition(player.gameObject.transform.position);
         grid.LightThePath(grid.GetTile(playerPos));
+    }
+
+    void AddEnemies(){
+        // TODO: better generation
+        // place one of each enemy type on a random tile
+        foreach (Enemy enemy in enemies) {
+            int x = Random.Range(1, rows);
+            int z = Random.Range(1, rows);
+
+            var e = Instantiate(enemy);
+            e.transform.position = grid.CellToWorld(new Vector3Int(x, 0, z));
+
+            grid.enemies.Add(e);
+        }
     }
 }

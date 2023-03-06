@@ -16,6 +16,9 @@ public class CustomGrid : MonoBehaviour
     bool isSpinning = false;
     private PlayerController player;
 
+    public List<Enemy> enemies = new List<Enemy>();
+
+
     public void Start(){
         player = FindObjectOfType<PlayerController>();
     }
@@ -49,6 +52,13 @@ public class CustomGrid : MonoBehaviour
             StartCoroutine(ShiftAnimation(player, direction, outTile));
         }
 
+        foreach (Enemy enemy in enemies) {
+            Vector3Int enemyPos = GetGridCellPosition(enemy.gameObject.transform.position);
+            if (enemyPos.x == rowIndex){
+                StartCoroutine(ShiftAnimation(enemy, direction, outTile));
+            }
+        }
+
     }
 
     public void ShiftColumn(int columnIndex, PassageTile replaceValue, Utils.Direction direction){
@@ -69,6 +79,13 @@ public class CustomGrid : MonoBehaviour
         // move the player
         if (playerPos.z == columnIndex){
             StartCoroutine(ShiftAnimation(player, direction, outTile));
+        }
+
+        foreach (Enemy enemy in enemies) {
+            Vector3Int enemyPos = GetGridCellPosition(enemy.gameObject.transform.position);
+            if (enemyPos.z == columnIndex){
+                StartCoroutine(ShiftAnimation(enemy, direction, outTile));
+            }
         }
     }
 
@@ -222,9 +239,9 @@ public class CustomGrid : MonoBehaviour
         return cellPos;
     }
 
-    // public Vector3 CellToWorld(Vector3Int pos){
-    //     return new Vector3(pos.x * (cellSize + cellSpacing), 0, pos.z * (cellSize + cellSpacing));
-    // }
+    public Vector3 CellToWorld(Vector3Int pos){
+        return new Vector3(pos.x * (cellSize + cellSpacing), 0, pos.z * (cellSize + cellSpacing));
+    }
 
 
     public Vector3 SnapToGrid(Vector3 position)
