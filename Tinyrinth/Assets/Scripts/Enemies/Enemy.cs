@@ -5,7 +5,7 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     private bool isMoving = false;
-    private Vector3 lastMovementDirection = Vector3.right;
+    private Vector3 lastMovementDirection = Vector3.left;
 
     // Start is called before the first frame update
     void Start()

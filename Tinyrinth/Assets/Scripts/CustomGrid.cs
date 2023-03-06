@@ -89,14 +89,51 @@ public class CustomGrid : MonoBehaviour
         }
     }
 
-    private void EnableAllLights(bool value){
+    void AfterShift(PassageTile removedTile){
+        // Remove tile that was shifted out of the board.
+        // TODO: Add to deck.
+        Destroy(removedTile.gameObject);
+
+        // Show the paths connected to the player
+        Vector3Int playerPos = GetGridCellPosition(player.gameObject.transform.position);
+        LightThePath(GetTile(playerPos));
+
+        // If any entity has left the board, put them back on the opposite side
+        foreach (Enemy enemy in enemies){
+            GetBackInTheBoard(enemy);
+        }
+        GetBackInTheBoard(player);
+
+        // TODO: pass turn
+    }
+
+    void GetBackInTheBoard(MonoBehaviour entity){
+        var pos = GetGridCellPosition(entity.transform.position);
+        if (pos.x >= rows){
+            // move to x = 0
+            entity.transform.position = CellToWorld(new Vector3Int(0,0,pos.z));
+        }
+        if (pos.x < 0){
+            // move to x = rows-1
+            entity.transform.position = CellToWorld(new Vector3Int(rows-1,0,pos.z));
+        }
+        if (pos.z >= columns){
+            // move to y = 0
+            entity.transform.position = CellToWorld(new Vector3Int(pos.x,0,0));
+        }
+        if (pos.z < 0){
+            // move to y = columns-1
+            entity.transform.position = CellToWorld(new Vector3Int(pos.x,0,columns-1));
+        }
+    }
+
+    public void EnableAllLights(bool value){
         foreach(var tile in GetAllTiles()){
             tile.EnableLights(value);
         }
     }
 
     public void LightThePath(PassageTile originTile){
-        EnableAllLights(false);
         // Flood-fill: Queue-based recursive implementation
         // 1. Set Q to the empty queue
         Queue<PassageTile> connectedTiles = new Queue<PassageTile>();
@@ -178,7 +215,7 @@ public class CustomGrid : MonoBehaviour
         if (startTile == null || endTile == null) return false;
 
         if (directionVector.magnitude != 1){
-            Debug.Log("Distance > 1");
+            Debug.Log("Distance != 1: ("+directionVector.x+","+directionVector.z+") " + directionVector.magnitude);
             return false;
         }
 
@@ -429,7 +466,7 @@ public class CustomGrid : MonoBehaviour
         Vector3 scale = Vector3.one;
         float rotation = 0f;
         float rotationSpeed = 0f;
-        float rotationAccel = 1f;
+        float rotationAcceleration = 1f;
         //spin real fast
         var t = 0f;
 
@@ -437,17 +474,14 @@ public class CustomGrid : MonoBehaviour
         {
             t += Time.deltaTime;
             rotation += rotationSpeed;
-            rotationSpeed += rotationAccel;
+            rotationSpeed += rotationAcceleration;
             scale = Vector3.Lerp(Vector3.one, Vector3.zero, t / animDuration);
             outTile.transform.Rotate(new Vector3(0, rotation, 0));
             outTile.transform.localScale = scale;
             yield return null;
         }
-        
-        Destroy(outTile.gameObject);
 
-        Vector3Int playerPos = GetGridCellPosition(player.gameObject.transform.position);
-        LightThePath(GetTile(playerPos));
+        AfterShift(outTile);
 
         isSpinning = false;
     }

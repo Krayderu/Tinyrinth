@@ -5,8 +5,6 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     //variables for playerState
-    //private CharacterController controller;
-    [SerializeField] private float movementSpeed = 1f;
 
     private PassageTile currentTile;                //current position of the player
     private PassageTile startingTile;               //Starting position of the player's movement
@@ -77,11 +75,14 @@ public class PlayerController : MonoBehaviour
         {
             movementDirection = new Vector3(0, 0, -1);
         }
-        Vector3 startPosition = transform.position;
-        Vector3 endPosition = transform.position + movementDirection * (grid.cellSize + grid.cellSpacing);
         // move character
         if (!grid.isMoving && !isMoving && movementDirection != Vector3.zero){
-            lastMovementDirection = movementDirection;
+            lastMovementDirection = movementDirection; // cache movement direction (for rotation)
+
+            Vector3 startPosition = transform.position;
+            Vector3 endPosition = transform.position + movementDirection * (grid.cellSize + grid.cellSpacing);
+        
+            // Verify that the player can move in this direction
             if (grid.CanMove(grid.GetGridCellPosition(startPosition), grid.GetGridCellPosition(endPosition))){
                 StartCoroutine(Move(startPosition, endPosition));
             }
@@ -132,6 +133,8 @@ public class PlayerController : MonoBehaviour
             // Verify we can build and the grid is not moving
             if (!grid.IsPlaceable(gridCellPos) || grid.isMoving) return;
 
+            grid.EnableAllLights(false);
+
             // Find shift direction and shift row/column according to insertion place
             Utils.Direction direction;
             int index;
@@ -169,6 +172,7 @@ public class PlayerController : MonoBehaviour
             }
 
             currentPrefab.transform.parent = grid.transform; // set as child of Grid
+            currentPrefab.EnableLights(false); // turn off lights (show in preview but not when the tile is placed)
 
             // Here, we place the currentPrefab by stopping to move it:
             // we choose a new prefab to replace the currentPrefab.
